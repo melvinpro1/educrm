@@ -76,8 +76,15 @@ WSGI_APPLICATION = 'edubackend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'mssql',
+        'NAME': 'BackEduCRM',
+        'USER': 'sa',
+        'PASSWORD': 'ucr2025',
+        'HOST': 'DESKTOP-KAOHVPG\SQLEXPRESS',
+        'PORT': '',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+        },
     }
 }
 
