@@ -1,13 +1,199 @@
-body {
+/* =========================
+   Estilos globales básicos
+   ========================= */
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #eef2f7; /* gris claro de fondo */
+  color: #8daaec;            /* azul/gris oscuro para texto */
+}
+
+/* =========================
+   Contenedor general login
+   ========================= */
+.pagina-autenticacion {
+  min-height: 100vh;                    /* ocupa toda la pantalla */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.tarjeta-autenticacion {
+  width: 100%;
+  max-width: 420px;
+  background-color: #ffffff;
+  border-radius: 22px;
+  padding: 32px 30px 24px;
+  box-shadow: 0 16px 40px rgba(100, 143, 207, 0.13);
+  text-align: center;
+}
+
+/* ==============
+   Logo superior
+   ============== */
+.logo-autenticacion {
+  width: 90px;                /* tamaño del círculo */
+  height: 90x;
+  margin: 0 auto 15px;        /* centrado y con espacio abajo */
+  border-radius: 50%;         /* lo hace circular */
+  background-color: #ffffff;  /* fondo blanco */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;           /* recorta lo que sobresale del logo */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.imagen-logo {
+  width: 100%;                /* un poquito más grande para llenar el círculo */
+  height: 100%;
+  object-fit: cover;          /* recorta para llenar sin deformar */
+}
+
+
+
+/* =========================
+   Títulos y subtítulos
+   ========================= */
+.titulo-autenticacion {
+  font-size: 24px;
+  font-weight: 700;
+  color: #294fa1;
+  margin-bottom: 4px;
+}
+
+.subtitulo-autenticacion {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+
+/* =========================
+   Botones
+   ========================= */
+.boton {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+
+.boton-principal {
+  background-color: #6992eb;
+  color: #ffffff;
+}
+
+.boton-principal:hover {
+  background-color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.boton-secundario {
+  background-color: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.boton-secundario:hover {
+  background-color: #f9fafb;
+  transform: translateY(-1px);
+}
+
+/* Icono G del botón de Google (simple por ahora) */
+.icono-google {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* =========================
+   Campos de formulario
+   ========================= */
+.grupo-campo {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.etiqueta-campo {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.campo {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.16s ease;
+}
+
+.campo:focus {
+  border-color: #111827;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
+}
+
+/* =========================
+   Separador "O"
+   ========================= */
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #9ca3af;
+  margin: 16px 0;
+}
+
+.separador::before,
+.separador::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: #e5e7eb;
+}
+
+/* =========================
+   Formulario y textos extra
+   ========================= */
+.formulario-autenticacion {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.texto-pie-autenticacion {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 10px;
+}
+
+.enlace-autenticacion {
+  color: #111827;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.enlace-autenticacion:hover {
+  text-decoration: underline;
 }
