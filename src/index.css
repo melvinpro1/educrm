@@ -197,3 +197,13 @@ body {
 .enlace-autenticacion:hover {
   text-decoration: underline;
 }
+.layout-principal {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f3f6fb;
+}
+
+.contenido-principal {
+  flex: 1;
+  overflow-y: auto;
+}
