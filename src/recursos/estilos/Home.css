@@ -14,7 +14,7 @@
 .home-titulo {
   font-size: 26px;
   font-weight: 700;
-  color: #16a34a;
+  color: #1816a3;
   margin: 0;
 }
 
@@ -46,7 +46,7 @@
 
 .home-tarjeta h3 {
   font-size: 14px;
-  color: #4b5563;
+  color: #82b1f3;
   margin-bottom: 6px;
 }
 
@@ -59,11 +59,11 @@
 
 .home-extra {
   font-size: 12px;
-  color: #16a34a;
+  color: #162ba3;
 }
 
 .azul { border-top: 3px solid #3b82f6; }
-.verde { border-top: 3px solid #10b981; }
+.verde { border-top: 3px solid #13aa78; }
 .morado { border-top: 3px solid #8b5cf6; }
 .naranja { border-top: 3px solid #f97316; }
 

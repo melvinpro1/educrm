@@ -4,18 +4,19 @@ import React from "react";
 import "./Siderbar.css";
 import logo from "../../recursos/imagenes/logo.jpg"; // ajusta si tu logo está en otra ruta
 
+// Definimos las opciones con un id que usaremos en App.js
 const opcionesMenu = [
-  { id: 1, etiqueta: "Panel Principal", activo: true },
-  { id: 2, etiqueta: "Estudiantes" },
-  { id: 3, etiqueta: "Encargados" },
-  { id: 4, etiqueta: "Comunicaciones" },
-  { id: 5, etiqueta: "Usuarios del Sistema" },
+  { id: "home", etiqueta: "Panel Principal" },
+  { id: "estudiantes", etiqueta: "Estudiantes" },
+  { id: "encargados", etiqueta: "Encargados" },
+  { id: "comunicaciones", etiqueta: "Comunicaciones" },
+  { id: "usuarios", etiqueta: "Usuarios del Sistema" },
 ];
 
-function Sidebar() {
+function Sidebar({ vistaActiva, onCambiarVista }) {
   return (
     <aside className="sidebar">
-      {/* Encabezado con logo + nombre sistema */}
+      {/* Logo + título */}
       <div className="sidebar-encabezado">
         <div className="sidebar-logo-contenedor">
           <img src={logo} alt="Logo EduCRM" className="sidebar-logo" />
@@ -30,20 +31,25 @@ function Sidebar() {
       <nav className="sidebar-nav">
         <p className="sidebar-seccion-titulo">NAVEGACIÓN</p>
         <ul className="sidebar-lista">
-          {opcionesMenu.map((item) => (
+          {opcionesMenu.map((opcion) => (
             <li
-              key={item.id}
+              key={opcion.id}
               className={
-                "sidebar-item" + (item.activo ? " sidebar-item-activo" : "")
+                "sidebar-item" +
+                (vistaActiva === opcion.id ? " sidebar-item-activo" : "")
               }
+              onClick={() => {
+                // Solo cambiamos vista si existe el handler
+                if (onCambiarVista) onCambiarVista(opcion.id);
+              }}
             >
-              <span className="sidebar-item-texto">{item.etiqueta}</span>
+              <span className="sidebar-item-texto">{opcion.etiqueta}</span>
             </li>
           ))}
         </ul>
       </nav>
 
-      {/* Info sistema */}
+      {/* Sistema */}
       <div className="sidebar-sistema">
         <p className="sidebar-sistema-titulo">SISTEMA</p>
         <div className="sidebar-sistema-card">
@@ -55,7 +61,7 @@ function Sidebar() {
         </div>
       </div>
 
-      {/* Usuario + botón */}
+      {/* Usuario */}
       <div className="sidebar-usuario">
         <div className="sidebar-usuario-avatar">M</div>
         <div className="sidebar-usuario-info">
