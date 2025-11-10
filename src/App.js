@@ -4,6 +4,7 @@ import Home from "./paginas/Home";
 import "./index.css"; // si aquí tienes estilos globales
 import VistaEstudiante from "./paginas/VistaEstudiante.jsx";
 import VistaEncargados from "./paginas/VistaEncargado.jsx";
+import VistaComunicacion from "./paginas/VistaComunicacion.jsx";
 
 function App() {
   // Estado global simple para saber qué vista mostrar
@@ -16,22 +17,21 @@ function App() {
         return <Home />;
       case "estudiantes":
         return <VistaEstudiante/>;
-         case "encargados":
+      case "encargados":
         return <VistaEncargados/>;
+      case "comunicaciones":
+        return <VistaComunicacion/>;  
       default:
         return <Home />; // por si acaso
     }
   };
 
-  return (
+   return (
     <div className="layout-principal">
-      {/* Sidebar recibe la vista actual y la función para cambiarla */}
       <Sidebar
         vistaActiva={vistaActiva}
-        onCambiarVista={(nuevaVista) => setVistaActiva(nuevaVista)}
+        onCambiarVista={setVistaActiva}
       />
-
-      {/* Contenido dinámico */}
       <main className="contenido-principal">{renderContenido()}</main>
     </div>
   );

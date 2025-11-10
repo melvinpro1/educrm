@@ -197,13 +197,20 @@ body {
 .enlace-autenticacion:hover {
   text-decoration: underline;
 }
+/* Contenedor general */
 .layout-principal {
   display: flex;
   min-height: 100vh;
-  background-color: #f3f6fb;
 }
 
+/* Zona derecha que sí hace scroll */
 .contenido-principal {
-  flex: 1;
-  overflow-y: auto;
+  margin-left: 260px;   /* 👈 mismo ancho del sidebar fijo */
+  padding: 24px 32px;
+  width: calc(100% - 260px);
+
+  height: 100vh;
+  overflow-y: auto;     /* 👈 aquí vive el scroll */
+  background: #f3f6fb;
 }
+

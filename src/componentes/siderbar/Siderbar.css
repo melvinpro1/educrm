@@ -8,8 +8,16 @@
   flex-direction: column;
   gap: 18px;
   border-right: 1px solid #e5e7eb;
-  min-height: 100vh;
+
+  position: fixed;      /* 👈 Fijo en la pantalla */
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  overflow-y: auto;     /* Si el menú crece, solo él hace scroll interno */
+  z-index: 10;
 }
+
 
 /* Encabezado */
 

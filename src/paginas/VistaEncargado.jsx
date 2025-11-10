@@ -32,17 +32,7 @@ const datosIniciales = [
     nombre: "Diego Sánchez Porras",
     correo: "diego.sanchez@ccsp.ed.cr",
     telefono: "7298-3311",
-  },
-  {
-    nombre: "Isabella Pérez Chavarría",
-    correo: "isabella.perez@ccsp.ed.cr",
-    telefono: "8884-2309",
-  },
-  {
-    nombre: "Felipe Campos Aguilar",
-    correo: "felipe.campos@ccsp.ed.cr",
-    telefono: "7116-9832",
-  },
+  }
 ];
 
 //se debe cambiar los datos de ejemplo por datos reales del backend
