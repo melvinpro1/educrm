@@ -3,6 +3,7 @@ import Sidebar from "./componentes/siderbar/Siderbar.jsx";
 import Home from "./paginas/Home";
 import "./index.css"; // si aquí tienes estilos globales
 import VistaEstudiante from "./paginas/VistaEstudiante.jsx";
+import VistaEncargados from "./paginas/VistaEncargado.jsx";
 
 function App() {
   // Estado global simple para saber qué vista mostrar
@@ -15,6 +16,8 @@ function App() {
         return <Home />;
       case "estudiantes":
         return <VistaEstudiante/>;
+         case "encargados":
+        return <VistaEncargados/>;
       default:
         return <Home />; // por si acaso
     }
