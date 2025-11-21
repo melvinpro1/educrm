@@ -26,4 +26,5 @@ router.register(r'estudiantes', EstudianteViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/comunicaciones/', include('comunicaciones.urls')),
 ]
