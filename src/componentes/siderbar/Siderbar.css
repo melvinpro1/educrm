@@ -1,0 +1,181 @@
+/* Menú lateral */
+
+.sidebar {
+  width: 260px;
+  background: #f3f6fb;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid #e5e7eb;
+
+  position: fixed;      /* 👈 Fijo en la pantalla */
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  overflow-y: auto;     /* Si el menú crece, solo él hace scroll interno */
+  z-index: 10;
+}
+
+
+/* Encabezado */
+
+.sidebar-encabezado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-logo-contenedor {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #0f766e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.sidebar-logo {
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+}
+
+.sidebar-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+.sidebar-subtitulo {
+  font-size: 11px;
+  margin: 0;
+  color: #6b7280;
+}
+
+/* Navegación */
+
+.sidebar-seccion-titulo {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 10px 0 4px;
+}
+
+.sidebar-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-item {
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.sidebar-item:hover {
+  background-color: #e5f2ff;
+}
+
+.sidebar-item-activo {
+  background-color: #1643a3;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.28);
+}
+
+/* Sistema */
+
+.sidebar-sistema-titulo {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin: 4px 0;
+}
+
+.sidebar-sistema-card {
+  background: #e6f7ff;
+  border-radius: 12px;
+  padding: 8px;
+  font-size: 11px;
+  color: #374151;
+}
+
+.sidebar-sistema-card hr {
+  border: none;
+  border-top: 1px solid #d1d5db;
+  margin: 4px 0;
+}
+
+.sidebar-sistema-version {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Usuario + botón */
+
+.sidebar-usuario {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background-color: #e5f2ff;
+}
+
+.sidebar-usuario-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sidebar-usuario-nombre {
+  font-size: 11px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.sidebar-usuario-rol {
+  font-size: 9px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.sidebar-boton-cerrar {
+  margin-top: 6px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 11px;
+  background: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #374151;
+  transition: all 0.18s ease;
+}
+
+.sidebar-boton-cerrar:hover {
+  background-color: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
