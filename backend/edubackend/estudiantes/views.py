@@ -14,9 +14,31 @@ class EncargadoViewSet(viewsets.ModelViewSet):
         # solo activos por defecto
         return Encargado.objects.filter(estado=True)
 
-    def destroy(self, request, *args, **kwargs):
+    '''def destroy(self, request, *args, **kwargs):
         # soft delete del encargado
         instance = self.get_object()
+        instance.estado = False
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)'''
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete del encargado SOLO si no tiene estudiantes activos.
+        """
+        instance: Encargado = self.get_object()
+
+        # asumiendo related_name='estudiantes' en Estudiante.id_encargado
+        tiene_estudiantes_activos = instance.estudiantes.filter(estado=True).exists()
+
+        if tiene_estudiantes_activos:
+            return Response(
+                {
+                    "detail": "No se puede desactivar este encargado porque aún tiene estudiantes activos."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # si no tiene estudiantes activos, lo desactivamos
         instance.estado = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
