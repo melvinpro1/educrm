@@ -9,6 +9,6 @@ from django.urls import path
 from .views import CorreoListAPIView, EnviarCorreoView
 
 urlpatterns = [
-    path("api/correos/", CorreoListAPIView.as_view(), name="correos-list"),
-    path("api/correos/enviar/", EnviarCorreoView.as_view(), name="correos-enviar"),
+    path("correos/", CorreoListAPIView.as_view(), name="correos-list"),
+    path("correos/enviar/", EnviarCorreoView.as_view(), name="correos-enviar"),
 ]
