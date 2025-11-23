@@ -131,7 +131,7 @@
 
 import React, { useEffect, useState } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
-import { getEncargados, deleteEncargado } from "../api/encargados";
+import { getEncargados, deleteEncargado, updateEncargado } from "../api/encargados";
 
 function Encargados() {
   const [busqueda, setBusqueda] = useState("");
@@ -176,6 +176,33 @@ function Encargados() {
     // Alternativa: actualizar solo en memoria
     // setEncargados(prev => prev.filter(e => e.id_encargado !== id_encargado));
   }
+
+  async function handleEdit(enc) {
+    // Versión simple con prompts (luego lo cambiamos por modal/form)
+    const nuevoNombre = window.prompt("Nombre del encargado:", enc.nombre);
+    if (nuevoNombre === null) return;
+
+    const nuevoCorreo = window.prompt("Correo del encargado:", enc.correo);
+    if (nuevoCorreo === null) return;
+
+    const nuevoTelefono = window.prompt("Teléfono del encargado:", enc.telefono || "");
+    if (nuevoTelefono === null) return;
+
+    const result = await updateEncargado(enc.id_encargado, {
+      nombre: nuevoNombre,
+      correo: nuevoCorreo,
+      telefono: nuevoTelefono,
+    });
+
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+
+    // Recargar lista desde el backend
+    await cargarEncargados();
+  }
+
 
   // Si quieres que el buscador dispare petición al back:
   // useEffect(() => { cargarEncargados(); }, [busqueda]);
@@ -230,7 +257,7 @@ function Encargados() {
 
             <div className="tarjeta-acciones">
               <button className="btn-ver">👁 Ver</button>
-              <button className="btn-editar">✏️</button>
+              <button className="btn-editar" onClick={() => handleEdit(e)}>✏️</button>
               <button
                 className="btn-eliminar"
                 onClick={() => handleDelete(e.id_encargado)}
