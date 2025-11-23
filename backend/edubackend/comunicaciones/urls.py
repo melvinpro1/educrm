@@ -1,6 +1,14 @@
-from django.urls import path
+'''from django.urls import path
 from .views import EnviarCorreoView
 
 urlpatterns = [
     path("enviar/", EnviarCorreoView.as_view(), name="enviar-correo"),
+]'''
+
+from django.urls import path
+from .views import CorreoListAPIView, EnviarCorreoView
+
+urlpatterns = [
+    path("api/correos/", CorreoListAPIView.as_view(), name="correos-list"),
+    path("api/correos/enviar/", EnviarCorreoView.as_view(), name="correos-enviar"),
 ]
