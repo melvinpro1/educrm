@@ -195,6 +195,8 @@ class EstudianteSerializer(serializers.ModelSerializer):
             'nombre',
             'correo_institucional',
             'correo_personal',
+            'telefono',
+            'colegio_procedencia',
             'grado',
             'direccion_domicilio',
             'estado',

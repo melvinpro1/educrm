@@ -18,9 +18,11 @@ class Estudiante(models.Model):
     cedula = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=150)
     correo_institucional = models.EmailField(max_length=150)
-    correo_personal = models.EmailField(max_length=150)
+    correo_personal = models.EmailField(max_length=150, blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    colegio_procedencia = models.CharField(max_length=200, blank=True, null=True)
     grado = models.CharField(max_length=50)
-    direccion_domicilio = models.CharField(max_length=255)
+    direccion_domicilio = models.CharField(max_length=255, blank=True, null=True)
 
     # FK a Encargado
     id_encargado = models.ForeignKey(
