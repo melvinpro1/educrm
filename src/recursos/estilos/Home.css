@@ -1,6 +1,6 @@
 .home {
   padding: 24px 28px;
-  background: #f3f6fb;
+  background: #f8f9fb;
 }
 
 /* Encabezado */
@@ -14,7 +14,7 @@
 .home-titulo {
   font-size: 26px;
   font-weight: 700;
-  color: #1816a3;
+  color: #003ea5;
   margin: 0;
 }
 
@@ -46,26 +46,58 @@
 
 .home-tarjeta h3 {
   font-size: 14px;
-  color: #82b1f3;
+  color: rgba(255, 255, 255, 0.85);
   margin-bottom: 6px;
+  font-weight: 500;
 }
 
 .home-numero {
   font-size: 26px;
   font-weight: 700;
-  color: #1d4ed8;
+  color: white;
   margin: 0;
 }
 
 .home-extra {
   font-size: 12px;
-  color: #162ba3;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.azul { border-top: 3px solid #3b82f6; }
-.verde { border-top: 3px solid #13aa78; }
-.morado { border-top: 3px solid #8b5cf6; }
-.naranja { border-top: 3px solid #f97316; }
+.azul { 
+  background: linear-gradient(135deg, #003ea5, #0052d4);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.2);
+}
+
+.verde { 
+  background: linear-gradient(135deg, #7f8bbf, #aaafcf);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 12px rgba(127, 139, 191, 0.2);
+}
+
+.morado { 
+  background: linear-gradient(135deg, #ffc72d, #ffd657);
+  border: none;
+  color: #1a1a1a;
+  box-shadow: 0 4px 12px rgba(255, 199, 45, 0.2);
+}
+
+.morado .home-numero {
+  color: #1a1a1a;
+}
+
+.morado h3 {
+  color: rgba(26, 26, 26, 0.75);
+}
+
+.naranja { 
+  background: linear-gradient(135deg, #003ea5, #1a5cc5);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.2);
+}
 
 /* Gráficos */
 .home-graficos {
@@ -84,7 +116,7 @@
 .home-grafico h2 {
   font-size: 16px;
   font-weight: 600;
-  color: #1816a3;
+  color: #003ea5;
   margin: 0 0 12px 0;
 }
 
@@ -134,20 +166,20 @@
   padding: 14px 16px;
   background: #f9fafb;
   border-radius: 10px;
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #003ea5;
   transition: all 0.2s ease;
 }
 
 .home-resumen-item:nth-child(2) {
-  border-left-color: #10b981;
+  border-left-color: #7f8bbf;
 }
 
 .home-resumen-item:nth-child(3) {
-  border-left-color: #8b5cf6;
+  border-left-color: #ffc72d;
 }
 
 .home-resumen-item:nth-child(4) {
-  border-left-color: #f97316;
+  border-left-color: #aaafcf;
 }
 
 .home-resumen-item:hover {
@@ -164,5 +196,120 @@
 .home-resumen-valor {
   font-size: 22px;
   font-weight: 700;
-  color: #1816a3;
+  color: #003ea5;
+}
+
+/* Historial de Acciones */
+.home-historial {
+  margin-top: 30px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.home-historial h2 {
+  font-size: 18px;
+  color: #003ea5;
+  margin: 0 0 16px;
+  font-weight: 600;
+}
+
+.historial-container {
+  width: 100%;
+}
+
+.historial-vacio {
+  text-align: center;
+  color: #9ca3af;
+  padding: 20px;
+  font-size: 14px;
+}
+
+.historial-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.historial-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border-left: 3px solid #003ea5;
+  transition: all 0.2s ease;
+}
+
+.historial-item:hover {
+  background: #f3f4f6;
+  transform: translateX(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.historial-icono {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 62, 165, 0.1);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.historial-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.historial-descripcion {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px;
+}
+
+.historial-detalles {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.historial-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.historial-usuario {
+  font-size: 11px;
+  color: #374151;
+  font-weight: 500;
+  background: #e5e7eb;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.historial-fecha {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .historial-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .historial-meta {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }

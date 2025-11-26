@@ -2,7 +2,7 @@
 
 .sidebar {
   width: 260px;
-  background: #f3f6fb;
+  background: #ffffff;
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -31,7 +31,7 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: #0f766e;
+  background: #003ea5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,27 +76,28 @@
 }
 
 .sidebar-item {
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
   font-size: 13px;
   color: #374151;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .sidebar-item:hover {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: #e8f0ff;
+  color: #003ea5;
 }
 
 .sidebar-item-activo {
-  background-color: #1643a3;
+  background-color: #003ea5;
   color: #ffffff;
-  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.28);
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.25);
 }
 
 .sidebar-item-activo:hover {
-  background-color: #1643a3;
+  background-color: #003ea5;
   color: #ffffff;
 }
 
@@ -110,11 +111,12 @@
 }
 
 .sidebar-sistema-card {
-  background: #e6f7ff;
+  background: #fef9ed;
   border-radius: 12px;
-  padding: 8px;
+  padding: 10px;
   font-size: 11px;
   color: #374151;
+  border: 1px solid #ffc72d;
 }
 
 .sidebar-sistema-card hr {
@@ -135,16 +137,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 6px;
+  padding: 10px 8px;
   border-radius: 10px;
-  background-color: #e5f2ff;
+  background-color: #f0f4ff;
+  border: 1px solid #e8f0ff;
 }
 
 .sidebar-usuario-avatar {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  background-color: #3b82f6;
+  background-color: #003ea5;
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -167,21 +170,23 @@
 
 .sidebar-boton-cerrar {
   margin-top: 6px;
-  padding: 7px 10px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  font-size: 11px;
-  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  background: #696969;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  color: #374151;
-  transition: all 0.18s ease;
+  color: #ffffff;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .sidebar-boton-cerrar:hover {
-  background-color: #fee2e2;
-  border-color: #fecaca;
-  color: #b91c1c;
+  background: #555555;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }

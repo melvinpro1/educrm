@@ -4,9 +4,21 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Encargado, Estudiante
-from .serializers import EncargadoSerializer, EstudianteSerializer
+from .models import Encargado, Estudiante, HistorialAccion
+from .serializers import EncargadoSerializer, EstudianteSerializer, HistorialAccionSerializer
 from comunicaciones.models import Correo
+
+
+def registrar_accion(usuario, tipo_accion, descripcion, detalles=''):
+    """
+    Helper para registrar acciones en el historial
+    """
+    HistorialAccion.objects.create(
+        usuario=usuario,
+        tipo_accion=tipo_accion,
+        descripcion=descripcion,
+        detalles=detalles
+    )
 
 
 class EncargadoViewSet(viewsets.ModelViewSet):
@@ -30,6 +42,14 @@ class EncargadoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Registrar acción
+        registrar_accion(
+            usuario='Sistema',
+            tipo_accion='eliminar_encargado',
+            descripcion=f'Eliminó encargado: {instance.nombre}',
+            detalles=f'Correo: {instance.correo}'
+        )
+        
         # Hard delete
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -39,6 +59,30 @@ class EstudianteViewSet(viewsets.ModelViewSet):
     queryset = Estudiante.objects.all()
     serializer_class = EstudianteSerializer
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            nombre_estudiante = response.data.get('nombre', 'Desconocido')
+            registrar_accion(
+                usuario='Sistema',
+                tipo_accion='crear_estudiante',
+                descripcion=f'Creó estudiante: {nombre_estudiante}',
+                detalles=f'Cédula: {response.data.get("cedula", "N/A")}'
+            )
+        return response
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            nombre_estudiante = response.data.get('nombre', 'Desconocido')
+            registrar_accion(
+                usuario='Sistema',
+                tipo_accion='editar_estudiante',
+                descripcion=f'Editó estudiante: {nombre_estudiante}',
+                detalles=f'Cédula: {response.data.get("cedula", "N/A")}'
+            )
+        return response
+
     def destroy(self, request, *args, **kwargs):
         """
         Hard delete del estudiante.
@@ -46,6 +90,14 @@ class EstudianteViewSet(viewsets.ModelViewSet):
         """
         instance: Estudiante = self.get_object()
         encargado = instance.id_encargado
+        
+        # Registrar acción antes de eliminar
+        registrar_accion(
+            usuario='Sistema',
+            tipo_accion='eliminar_estudiante',
+            descripcion=f'Eliminó estudiante: {instance.nombre}',
+            detalles=f'Cédula: {instance.cedula}, Grado: {instance.grado}'
+        )
 
         # Eliminar estudiante (hard delete)
         instance.delete()
@@ -100,5 +152,14 @@ class EstudianteViewSet(viewsets.ModelViewSet):
             'correos_totales': correos_totales,
             'estudiantes_por_nivel': niveles_data,
         })
+
+    @action(detail=False, methods=['get'])
+    def historial(self, request):
+        """
+        Obtiene las últimas 20 acciones del historial
+        """
+        acciones = HistorialAccion.objects.all()[:20]
+        serializer = HistorialAccionSerializer(acciones, many=True)
+        return Response(serializer.data)
 
 # Create your views here.

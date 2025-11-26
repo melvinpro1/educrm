@@ -10,7 +10,7 @@
 }
 
 .estudiantes-header h1 {
-  color: #1816a3;
+  color: #003ea5;
   font-size: 24px;
   margin: 0;
 }
@@ -21,18 +21,22 @@
 }
 
 .btn-nuevo {
-  background-color: #1816a3;
+  background-color: #003ea5;
   color: white;
   border: none;
-  padding: 10px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .btn-nuevo:hover {
-  background-color: #1816a3;
+  background-color: #002d7a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.3);
 }
 
 /* Buscador y filtros */
@@ -65,8 +69,9 @@
 }
 
 .filtro-niveles button.activo {
-  background: hsl(226, 84%, 39%);
-  color: #fff;
+  background: #ffc72d;
+  color: #2d2d2d;
+  font-weight: 600;
 }
 
 /* Tarjetas */
@@ -211,7 +216,7 @@
 .seccion-titulo {
   font-size: 16px;
   font-weight: 600;
-  color: #1624a3;
+  color: #003ea5;
   margin: 10px 0 14px;
 }
 
@@ -251,8 +256,8 @@
 .campo input:focus,
 .campo select:focus,
 .campo textarea:focus {
-  border-color: #165fa3;
-  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.1);
+  border-color: #003ea5;
+  box-shadow: 0 0 0 2px rgba(0, 62, 165, 0.1);
 }
 
 .acciones-form {
@@ -263,29 +268,48 @@
 }
 
 .btn-cancelar {
-  padding: 8px 14px;
+  padding: 10px 16px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
-  background: #f9fafb;
+  background: #ffffff;
   cursor: pointer;
   font-size: 13px;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.btn-cancelar:hover {
+  background: #f9fafb;
+  border-color: #aaafcf;
 }
 
 .btn-guardar {
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 8px;
   border: none;
-  background: #1059b9;
+  background: #003ea5;
   color: white;
   font-weight: 600;
   cursor: pointer;
   font-size: 13px;
-  transition: opacity 0.3s;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn-guardar:hover {
+  background: #002d7a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.3);
 }
 
 .btn-guardar:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Estilos de validación */

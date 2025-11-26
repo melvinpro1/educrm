@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import "../recursos/estilos/Home.css";
 import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from "recharts";
 import { getDashboardStats } from "../api/dashboard";
+import { getHistorialAcciones } from "../api/estudiantes";
 
-// Colores para el gráfico
+// Colores institucionales para el gráfico
 const COLORES = {
-  "Cuarto Nivel": "#3B82F6",
-  "Quinto Nivel": "#10B981",
+  "Cuarto Nivel": "#003ea5",  // Azul institucional
+  "Quinto Nivel": "#ffc72d",  // Amarillo institucional
 };
 
 function Home() {
@@ -18,6 +19,7 @@ function Home() {
     correos_totales: 0,
     estudiantes_por_nivel: [],
   });
+  const [historial, setHistorial] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fecha = new Date().toLocaleDateString("es-CR", {
@@ -30,6 +32,7 @@ function Home() {
   // Cargar estadísticas al montar el componente
   useEffect(() => {
     cargarEstadisticas();
+    cargarHistorial();
   }, []);
 
   async function cargarEstadisticas() {
@@ -37,6 +40,11 @@ function Home() {
     const data = await getDashboardStats();
     setStats(data);
     setLoading(false);
+  }
+
+  async function cargarHistorial() {
+    const data = await getHistorialAcciones();
+    setHistorial(data);
   }
 
   // Formatear datos para el gráfico
@@ -161,6 +169,45 @@ function Home() {
                   </span>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Historial de Acciones */}
+          <section className="home-historial">
+            <h2>📋 Historial de Transacciones</h2>
+            <div className="historial-container">
+              {historial.length === 0 ? (
+                <p className="historial-vacio">No hay acciones registradas</p>
+              ) : (
+                <div className="historial-lista">
+                  {historial.map((accion) => (
+                    <div key={accion.id} className="historial-item">
+                      <div className="historial-icono">
+                        {accion.tipo_accion.includes('crear') && '➕'}
+                        {accion.tipo_accion.includes('editar') && '✏️'}
+                        {accion.tipo_accion.includes('eliminar') && '🗑️'}
+                        {accion.tipo_accion.includes('enviar') && '📨'}
+                      </div>
+                      <div className="historial-info">
+                        <p className="historial-descripcion">{accion.descripcion}</p>
+                        <p className="historial-detalles">{accion.detalles}</p>
+                      </div>
+                      <div className="historial-meta">
+                        <span className="historial-usuario">👤 {accion.usuario}</span>
+                        <span className="historial-fecha">
+                          {new Date(accion.fecha_hora).toLocaleString('es-CR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </>

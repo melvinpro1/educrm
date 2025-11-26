@@ -120,13 +120,21 @@ body {
 }
 
 .boton-principal {
-  background-color: #6992eb;
+  background-color: #003ea5;
   color: #ffffff;
 }
 
 .boton-principal:hover {
-  background-color: #0f172a;
+  background-color: #002d7a;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.3);
+}
+
+.boton-principal:disabled {
+  background-color: #aaafcf;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .boton-secundario {
@@ -137,6 +145,7 @@ body {
 
 .boton-secundario:hover {
   background-color: #f9fafb;
+  border-color: #aaafcf;
   transform: translateY(-1px);
 }
 
@@ -173,9 +182,9 @@ body {
 }
 
 .campo:focus {
-  border-color: #111827;
+  border-color: #003ea5;
   background-color: #ffffff;
-  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
+  box-shadow: 0 0 0 2px rgba(0, 62, 165, 0.1);
 }
 
 /* =========================

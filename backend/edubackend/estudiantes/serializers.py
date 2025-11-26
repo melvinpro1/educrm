@@ -170,7 +170,7 @@ class EstudianteSerializer(serializers.ModelSerializer):
         return instance
 '''
 from rest_framework import serializers
-from .models import Encargado, Estudiante
+from .models import Encargado, Estudiante, HistorialAccion
 import re
 
 
@@ -337,3 +337,11 @@ class EstudianteSerializer(serializers.ModelSerializer):
 
     
 
+
+class HistorialAccionSerializer(serializers.ModelSerializer):
+    tipo_accion_display = serializers.CharField(source='get_tipo_accion_display', read_only=True)
+    
+    class Meta:
+        model = HistorialAccion
+        fields = ['id', 'usuario', 'tipo_accion', 'tipo_accion_display', 'descripcion', 'detalles', 'fecha_hora']
+        read_only_fields = ['id', 'fecha_hora']

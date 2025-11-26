@@ -137,3 +137,16 @@ export async function updateEstudiante(id, payload) {
     };
   }
 }
+
+/**
+ * Obtiene el historial de acciones recientes
+ * @returns {Promise<Array>} Array de acciones
+ */
+export async function getHistorialAcciones() {
+  try {
+    return await apiGet("/estudiantes/historial/");
+  } catch (error) {
+    console.error("Error obteniendo historial:", error);
+    return [];
+  }
+}
