@@ -1,10 +1,10 @@
 // 📁 src/paginas/FormularioEstudiante.jsx
-// Formulario para registrar Estudiante + Encargado al mismo tiempo.
+// Formulario para registrar/editar Estudiante + Encargado al mismo tiempo.
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
 
-function FormularioEstudiante({ onGuardar, onCancelar }) {
+function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) {
   // 🔹 Estado único para todos los campos
   const [formulario, setFormulario] = useState({
     // Estudiante
@@ -21,6 +21,26 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
     correoEncargado: "",
     telefonoEncargado: "",
   });
+
+  // 🔹 Cargar datos iniciales si estamos en modo edición
+  useEffect(() => {
+    if (datosIniciales) {
+      setFormulario({
+        cedula: datosIniciales.cedula || "",
+        nombre: datosIniciales.nombre || "",
+        correoInstitucional: datosIniciales.correo_institucional || "",
+        correoPersonal: datosIniciales.correo_personal || "",
+        telefono: datosIniciales.telefono || "",
+        colegioProcedencia: datosIniciales.colegio_procedencia || "",
+        grado: datosIniciales.grado || "Cuarto Nivel",
+        direccion: datosIniciales.direccion_domicilio || "",
+        // Encargado
+        nombreEncargado: datosIniciales.encargado?.nombre || "",
+        correoEncargado: datosIniciales.encargado?.correo || "",
+        telefonoEncargado: datosIniciales.encargado?.telefono || "",
+      });
+    }
+  }, [datosIniciales]);
 
   // Manejar cambios en cualquier input
   const manejarCambio = (e) => {
@@ -69,7 +89,9 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
   return (
     <form className="form-estudiante" onSubmit={manejarSubmit}>
       {/* ================= DATOS DEL ESTUDIANTE ================= */}
-      <h2 className="seccion-titulo">Datos del Estudiante</h2>
+      <h2 className="seccion-titulo">
+        {datosIniciales ? "Editar Estudiante" : "Datos del Estudiante"}
+      </h2>
 
       <div className="fila">
         <div className="campo">
@@ -79,6 +101,7 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
             value={formulario.cedula}
             onChange={manejarCambio}
             required
+            disabled={!!datosIniciales} // No permitir cambiar cédula en edición
           />
         </div>
       </div>
@@ -165,7 +188,18 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
       </div>
 
       {/* ================= DATOS DEL ENCARGADO ================= */}
-      <h2 className="seccion-titulo">Datos del Encargado (Obligatorio)</h2>
+      <h2 className="seccion-titulo">
+        {datosIniciales ? "Datos del Encargado (Solo lectura)" : "Datos del Encargado (Obligatorio)"}
+      </h2>
+
+      {datosIniciales && (
+        <div className="info-edicion" style={{ marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#fff3cd", borderLeft: "4px solid #ffc107", borderRadius: "4px" }}>
+          <p style={{ color: "#856404", fontSize: "0.9rem", margin: 0 }}>
+            ℹ️ <strong>Nota:</strong> Los datos del encargado no pueden editarse desde aquí. 
+            Para modificarlos, vaya a la sección "Gestión de Encargados".
+          </p>
+        </div>
+      )}
 
       <div className="fila">
         <div className="campo">
@@ -175,6 +209,7 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
             value={formulario.nombreEncargado}
             onChange={manejarCambio}
             required
+            disabled={!!datosIniciales}
           />
         </div>
         <div className="campo">
@@ -185,6 +220,7 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
             value={formulario.correoEncargado}
             onChange={manejarCambio}
             required
+            disabled={!!datosIniciales}
           />
         </div>
       </div>
@@ -197,6 +233,7 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
             value={formulario.telefonoEncargado}
             onChange={manejarCambio}
             required
+            disabled={!!datosIniciales}
           />
         </div>
       </div>
@@ -211,7 +248,7 @@ function FormularioEstudiante({ onGuardar, onCancelar }) {
           Cancelar
         </button>
         <button type="submit" className="btn-guardar">
-          Guardar
+          {datosIniciales ? "Actualizar" : "Guardar"}
         </button>
       </div>
     </form>

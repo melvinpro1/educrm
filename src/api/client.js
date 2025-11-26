@@ -1,5 +1,6 @@
 // src/api/client.js
-const API_BASE = "http://localhost:8000/api";
+// Usa la variable de entorno o el valor por defecto
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
 
 export async function apiGet(path, { params } = {}) {
   let url = API_BASE + path;

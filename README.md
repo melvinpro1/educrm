@@ -1,53 +1,155 @@
-# Getting Started with Create React App
+# EDUCRM - Sistema de Gestión Académica
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Sistema CRM para gestión de estudiantes, encargados y comunicaciones del Colegio de Computación San Pedro (CCSP).
 
-## Available Scripts
+## 🚀 Instalación
 
-In the project directory, you can run:
+### 1. Clonar repositorio
+```bash
+git clone https://github.com/melvinpro1/educrm.git
+cd educrm
+```
 
-### `npm start`
+### 2. Configurar variables de entorno
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+# Copiar archivo de ejemplo
+cp .env.example .env.local
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Editar `.env.local` con tus credenciales:
 
-### `npm test`
+#### **Variables del Frontend:**
+- `REACT_APP_API_BASE_URL`: URL del backend (dejar `http://localhost:8000/api`)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### **Variables del Backend:**
 
-### `npm run build`
+**Django Secret Key:**
+```bash
+# Generar nueva secret key
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+Copiar el resultado en `SECRET_KEY`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+**Base de Datos (SQL Server):**
+- `DB_NAME`: Nombre de tu base de datos
+- `DB_USER`: Usuario de SQL Server (ej: `sa`)
+- `DB_PASSWORD`: Contraseña del usuario
+- `DB_HOST`: Servidor (ej: `localhost\SQLEXPRESS` o `TU-PC\SQLEXPRESS`)
+- `DB_DRIVER`: Driver ODBC instalado (verificar en "Administrador de orígenes de datos ODBC")
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Email (Gmail SMTP):**
+- `EMAIL_HOST_USER`: Tu correo Gmail
+- `EMAIL_HOST_PASSWORD`: **App Password** de Gmail (NO tu contraseña normal)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Cómo obtener App Password de Gmail:**
+1. Ir a https://myaccount.google.com/security
+2. Activar "Verificación en 2 pasos" (si no está activa)
+3. Buscar "Contraseñas de aplicaciones"
+4. Generar nueva contraseña para "Correo"
+5. Copiar la contraseña de 16 caracteres en `EMAIL_HOST_PASSWORD`
 
-### `npm run eject`
+**Verificar Driver ODBC instalado (Windows):**
+```bash
+# Listar drivers ODBC disponibles
+Get-OdbcDriver | Where-Object {$_.Name -like "*SQL Server*"} | Select-Object Name
+```
+Si no aparece "ODBC Driver 17 for SQL Server", descargarlo desde:
+https://docs.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+**Obtener nombre del servidor SQL Server:**
+```bash
+# En SQL Server Management Studio (SSMS), el nombre del servidor aparece al conectar
+# Formato: NOMBRE-PC\INSTANCIA (ej: LAPTOP-ABC123\SQLEXPRESS)
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**Ejemplo de `.env.local` configurado:**
+```env
+REACT_APP_API_BASE_URL=http://localhost:8000/api
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+SECRET_KEY=django-insecure-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+DB_ENGINE=mssql
+DB_NAME=BackEduCRM
+DB_USER=sa
+DB_PASSWORD=MiPassword123
+DB_HOST=LAPTOP-ABC123\SQLEXPRESS
+DB_PORT=
+DB_DRIVER=ODBC Driver 17 for SQL Server
 
-## Learn More
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=miproyecto@gmail.com
+EMAIL_HOST_PASSWORD=abcd efgh ijkl mnop
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
+### 3. Backend (Django)
+```bash
+# Crear entorno virtual
+python -m venv .venv
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# Activar entorno (Windows PowerShell)
+.\.venv\Scripts\Activate.ps1
+
+# Instalar dependencias
+pip install -r backend/edubackend/requirements.txt
+
+# Ejecutar migraciones
+cd backend/edubackend
+python manage.py migrate
+
+# Crear superusuario (opcional)
+python manage.py createsuperuser
+
+# Iniciar servidor
+python manage.py runserver
+```
+
+### 4. Frontend (React)
+```bash
+# En otra terminal, desde la raíz
+npm install
+npm start
+```
+
+## 🌐 Acceso
+
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:8000/api
+- **Admin Django:** http://localhost:8000/admin
+
+## 📦 Tecnologías
+
+- **Frontend:** React 19.2
+- **Backend:** Django 5.2 + Django REST Framework
+- **Base de datos:** SQL Server
+- **Email:** SMTP Gmail
+
+## 📝 Notas
+
+### Requisitos previos:
+- Python 3.11+ 
+- Node.js 16+
+- SQL Server con ODBC Driver 17 instalado
+- Cuenta Gmail con verificación en 2 pasos (para emails)
+
+### Variables de entorno importantes:
+- **No subir `.env.local`** al repositorio (ya está en .gitignore)
+- Cada desarrollador debe configurar su propio `.env.local`
+- Generar nueva `SECRET_KEY` para producción
+- Usar **App Password** de Gmail, no la contraseña normal
+
+### Documentación adicional:
+- Ver `ENV_CONFIG.md` para configuración detallada
+- Ver `COMANDOS.md` para comandos útiles
+
 
 ### Analyzing the Bundle Size
 

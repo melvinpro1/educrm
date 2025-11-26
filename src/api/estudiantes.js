@@ -1,6 +1,8 @@
 // src/api/estudiantes.js
 import { apiGet, apiDelete, apiPatch } from "./client";
 
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+
 export async function getEstudiantes() {
   return apiGet("/estudiantes/");
 }
@@ -36,7 +38,7 @@ export async function createEstudiante(formData) {
   };
 
   try {
-    const res = await fetch("http://localhost:8000/api/estudiantes/", {
+    const res = await fetch(`${API_BASE}/estudiantes/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -61,10 +63,24 @@ export async function createEstudiante(formData) {
   }
 }
 
-export async function updateEstudiante(id, payloadParcial) {
+export async function updateEstudiante(id, payload) {
   try {
-    const res = await apiPatch(`/estudiantes/${id}/`, payloadParcial);
-    return { ok: true, data: res };
+    const res = await fetch(`${API_BASE}/estudiantes/${id}/`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      const detail = data?.detail || "Error al actualizar estudiante.";
+      const err = new Error(detail);
+      err.detail = detail;
+      throw err;
+    }
+
+    return { ok: true, data };
   } catch (err) {
     return {
       ok: false,

@@ -201,11 +201,12 @@ import {
 } from "../api/estudiantes";
 
 function Estudiantes() {
-  const [modo, setModo] = useState("lista"); // "lista" | "nuevo"
+  const [modo, setModo] = useState("lista"); // "lista" | "nuevo" | "editar"
   const [busqueda, setBusqueda] = useState("");
   const [filtroNivel, setFiltroNivel] = useState("Todos");
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [estudianteEditando, setEstudianteEditando] = useState(null); // 🔹 Nuevo estado
 
   // 🔹 Cargar estudiantes desde el backend
   async function cargarEstudiantes() {
@@ -243,22 +244,48 @@ function Estudiantes() {
     filtrarPorNivel(estudiantes)
   );
 
-  // 🔹 Guardar estudiante desde el formulario (POST real)
+  // 🔹 Guardar estudiante desde el formulario (POST o PUT)
   const manejarGuardarEstudiante = async (formData) => {
-    const result = await createEstudiante(formData);
+    // Si hay estudianteEditando, hacemos UPDATE, sino CREATE
+    if (estudianteEditando) {
+      // Modo edición - NO enviamos datos del encargado
+      const payload = {
+        nombre: formData.nombre,
+        correo_institucional: formData.correoInstitucional,
+        correo_personal: formData.correoPersonal,
+        grado: formData.grado,
+        direccion_domicilio: formData.direccion,
+        // NO incluimos encargado - se edita en su propia sección
+      };
 
-    if (!result.ok) {
-      alert(result.error);
-      return;
+      const result = await updateEstudiante(estudianteEditando.id_estudiante, payload);
+
+      if (!result.ok) {
+        alert(result.error);
+        return;
+      }
+
+      await cargarEstudiantes();
+      setModo("lista");
+      setEstudianteEditando(null);
+    } else {
+      // Modo creación - SÍ enviamos datos del encargado
+      const result = await createEstudiante(formData);
+
+      if (!result.ok) {
+        alert(result.error);
+        return;
+      }
+
+      await cargarEstudiantes();
+      setModo("lista");
     }
-
-    await cargarEstudiantes();
-    setModo("lista");
   };
 
   // 🔹 Cancelar formulario
   const manejarCancelar = () => {
     setModo("lista");
+    setEstudianteEditando(null); // 🔹 Limpiar estudiante en edición
   };
 
   // 🔹 Eliminar estudiante (DELETE real)
@@ -278,49 +305,23 @@ function Estudiantes() {
     await cargarEstudiantes();
   };
 
-  // 🔹 Editar estudiante (versión simple con prompt)
-  const manejarEditar = async (est) => {
-    const nuevoNombre = window.prompt("Nombre del estudiante:", est.nombre);
-    if (nuevoNombre === null) return;
-
-    const nuevoCorreoInst = window.prompt(
-      "Correo institucional:",
-      est.correo_institucional || ""
-    );
-    if (nuevoCorreoInst === null) return;
-
-    const nuevoCorreoPers = window.prompt(
-      "Correo personal:",
-      est.correo_personal || ""
-    );
-    if (nuevoCorreoPers === null) return;
-
-    const payloadParcial = {
-      nombre: nuevoNombre,
-      correo_institucional: nuevoCorreoInst,
-      correo_personal: nuevoCorreoPers,
-    };
-
-    const result = await updateEstudiante(est.id_estudiante, payloadParcial);
-
-    if (!result.ok) {
-      alert(result.error);
-      return;
-    }
-
-    await cargarEstudiantes();
+  // 🔹 Editar estudiante - ahora usa el formulario completo
+  const manejarEditar = (est) => {
+    setEstudianteEditando(est);
+    setModo("editar");
   };
 
   // Si está en modo formulario: mostramos solo el form
-  if (modo === "nuevo") {
+  if (modo === "nuevo" || modo === "editar") {
     return (
       <div className="estudiantes">
         <div className="estudiantes-header">
           <div>
-            <h1>Nuevo Estudiante</h1>
+            <h1>{modo === "nuevo" ? "Nuevo Estudiante" : "Editar Estudiante"}</h1>
             <p>
-              Registre los datos del estudiante y su encargado. Ambos se
-              guardarán juntos.
+              {modo === "nuevo"
+                ? "Registre los datos del estudiante y su encargado. Ambos se guardarán juntos."
+                : "Modifique los datos del estudiante y su encargado."}
             </p>
           </div>
         </div>
@@ -328,6 +329,7 @@ function Estudiantes() {
         <FormularioEstudiante
           onGuardar={manejarGuardarEstudiante}
           onCancelar={manejarCancelar}
+          datosIniciales={estudianteEditando} // 🔹 Pasar datos si es edición
         />
       </div>
     );

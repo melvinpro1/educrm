@@ -1,6 +1,6 @@
 // src/api/comunicaciones.js
 
-const BASE_URL = "http://localhost:8000"; // cámbialo si usás otra URL
+const BASE_URL = process.env.REACT_APP_API_BASE_URL?.replace('/api', '') || "http://localhost:8000";
 
 // GET /api/comunicaciones/correos/
 export async function getComunicaciones(token) {

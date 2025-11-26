@@ -131,12 +131,15 @@
 
 import React, { useEffect, useState } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
+import FormularioEncargado from "./FormularioEncargado";
 import { getEncargados, deleteEncargado, updateEncargado } from "../api/encargados";
 
 function Encargados() {
+  const [modo, setModo] = useState("lista"); // "lista" | "editar"
   const [busqueda, setBusqueda] = useState("");
   const [encargados, setEncargados] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [encargadoEditando, setEncargadoEditando] = useState(null);
 
   // Cargar encargados desde el backend
   async function cargarEncargados() {
@@ -156,6 +159,26 @@ function Encargados() {
   const encargadosFiltrados = encargados.filter((e) =>
     e.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
+
+  // 🔹 Guardar encargado desde el formulario (solo edición)
+  const manejarGuardarEncargado = async (formData) => {
+    const result = await updateEncargado(encargadoEditando.id_encargado, formData);
+
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+
+    await cargarEncargados();
+    setModo("lista");
+    setEncargadoEditando(null);
+  };
+
+  // 🔹 Cancelar formulario
+  const manejarCancelar = () => {
+    setModo("lista");
+    setEncargadoEditando(null);
+  };
 
   async function handleDelete(id_encargado) {
     const confirmacion = window.confirm(
@@ -178,34 +201,35 @@ function Encargados() {
   }
 
   async function handleEdit(enc) {
-    // Versión simple con prompts (luego lo cambiamos por modal/form)
-    const nuevoNombre = window.prompt("Nombre del encargado:", enc.nombre);
-    if (nuevoNombre === null) return;
-
-    const nuevoCorreo = window.prompt("Correo del encargado:", enc.correo);
-    if (nuevoCorreo === null) return;
-
-    const nuevoTelefono = window.prompt("Teléfono del encargado:", enc.telefono || "");
-    if (nuevoTelefono === null) return;
-
-    const result = await updateEncargado(enc.id_encargado, {
-      nombre: nuevoNombre,
-      correo: nuevoCorreo,
-      telefono: nuevoTelefono,
-    });
-
-    if (!result.ok) {
-      alert(result.error);
-      return;
-    }
-
-    // Recargar lista desde el backend
-    await cargarEncargados();
+    setEncargadoEditando(enc);
+    setModo("editar");
   }
 
 
   // Si quieres que el buscador dispare petición al back:
   // useEffect(() => { cargarEncargados(); }, [busqueda]);
+
+  // Si está en modo formulario: mostramos solo el form
+  if (modo === "editar") {
+    return (
+      <div className="estudiantes">
+        <div className="estudiantes-header">
+          <div>
+            <h1>Editar Encargado</h1>
+            <p>
+              Modifique los datos del encargado. Los cambios se aplicarán a todos los estudiantes asociados.
+            </p>
+          </div>
+        </div>
+
+        <FormularioEncargado
+          onGuardar={manejarGuardarEncargado}
+          onCancelar={manejarCancelar}
+          datosIniciales={encargadoEditando}
+        />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
