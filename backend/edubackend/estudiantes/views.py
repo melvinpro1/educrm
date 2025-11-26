@@ -1,9 +1,12 @@
 from django.shortcuts import render
+from django.db.models import Count, Q
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Encargado, Estudiante
 from .serializers import EncargadoSerializer, EstudianteSerializer
+from comunicaciones.models import Correo
 
 
 class EncargadoViewSet(viewsets.ModelViewSet):
@@ -70,5 +73,50 @@ class EstudianteViewSet(viewsets.ModelViewSet):
             encargado.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'], url_path='dashboard-stats')
+    def dashboard_stats(self, request):
+        """
+        Endpoint para obtener estadísticas del dashboard
+        """
+        # Contar estudiantes activos e inactivos
+        estudiantes_activos = Estudiante.objects.filter(estado=True).count()
+        estudiantes_totales = Estudiante.objects.count()
+        
+        # Contar encargados activos
+        encargados_totales = Encargado.objects.filter(estado=True).count()
+        
+        # Contar correos enviados
+        correos_enviados = Correo.objects.count()
+        
+        # Calcular correos totales (suma de todas las relaciones correo-estudiante)
+        from comunicaciones.models import CorreoEstudiante
+        correos_totales = CorreoEstudiante.objects.count()
+        
+        # Estudiantes por nivel (solo activos)
+        estudiantes_por_nivel = (
+            Estudiante.objects.filter(estado=True)
+            .values('grado')
+            .annotate(cantidad=Count('id_estudiante'))
+            .order_by('grado')
+        )
+        
+        # Formatear datos para el frontend
+        niveles_data = [
+            {
+                'nombre': item['grado'],
+                'valor': item['cantidad']
+            }
+            for item in estudiantes_por_nivel
+        ]
+        
+        return Response({
+            'estudiantes_activos': estudiantes_activos,
+            'estudiantes_totales': estudiantes_totales,
+            'encargados_totales': encargados_totales,
+            'comunicaciones_enviadas': correos_enviados,
+            'correos_totales': correos_totales,
+            'estudiantes_por_nivel': niveles_data,
+        })
 
 # Create your views here.
