@@ -75,6 +75,33 @@ body {
 }
 
 /* =========================
+   Mensaje de error
+   ========================= */
+.mensaje-error-login {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.mensaje-exito-login {
+  background-color: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* =========================
    Botones
    ========================= */
 .boton {
