@@ -204,6 +204,78 @@ class EstudianteSerializer(serializers.ModelSerializer):
         ]
 
     # ========== CREATE ==========
+    def _limpiar_telefono(t):
+        if t is None:
+         return None
+         t = str(t).strip()
+         if t == "":
+          return None
+    # quitar espacios y guiones y otros separadores comunes
+         return re.sub(r'[\s\-]+', '', t)
+
+
+def _limpiar_correo(c):
+    if c is None:
+        return None
+    c = str(c).strip()
+    return c if c != "" else None
+
+
+def validate(self, data):
+    # Normalizar correos y teléfonos en data (para usar luego)
+    correo_inst = _limpiar_correo(data.get('correo_institucional'))
+    correo_pers = _limpiar_correo(data.get('correo_personal'))
+    encargado_data = data.get('id_encargado')
+    correo_enc = None
+    telefono_enc = None
+
+    if encargado_data:
+        correo_enc = _limpiar_correo(encargado_data.get('correo'))
+        telefono_enc = _limpiar_telefono(encargado_data.get('telefono'))
+
+    # Reemplazamos en data los valores normalizados (opcional pero recomendable)
+    if correo_inst is not None:
+        data['correo_institucional'] = correo_inst
+    if correo_pers is not None:
+        data['correo_personal'] = correo_pers
+    if encargado_data and correo_enc is not None:
+        encargado_data['correo'] = correo_enc
+    if encargado_data:
+        encargado_data['telefono'] = telefono_enc  # puede ser None
+
+    # ---------- 1) validar que los 3 correos no se repitan entre sí ----------
+    correos = [c for c in (correo_inst, correo_pers, correo_enc) if c]
+    if len(correos) != len(set(correos)):
+        raise serializers.ValidationError(
+            "El correo institucional, el correo personal y el correo del encargado deben ser distintos entre sí."
+        )
+
+    # ---------- 2) teléfono encargado no igual al teléfono del estudiante ----------
+    telefono_est = _limpiar_telefono(data.get('telefono'))
+    if telefono_est is not None:
+        data['telefono'] = telefono_est  # normalizamos también el teléfono del estudiante
+
+    if telefono_enc and telefono_est and telefono_enc == telefono_est:
+        raise serializers.ValidationError(
+            {"id_encargado": "El teléfono del encargado no puede ser igual al teléfono del estudiante."}
+        )
+
+    # ---------- 3) teléfono encargado no exista en la BD (excluyendo propio si update) ----------
+    if telefono_enc:
+        qs = Encargado.objects.filter(telefono=telefono_enc)
+        # Si estamos en update y el estudiante ya tiene un encargado, excluirlo
+        if self.instance and getattr(self.instance, "id_encargado", None):
+            qs = qs.exclude(pk=self.instance.id_encargado.pk)
+        if qs.exists():
+            raise serializers.ValidationError(
+                {"id_encargado": "Ya existe un encargado con este teléfono."}
+            )
+
+    return data
+
+
+
+
     def create(self, validated_data):
         encargado_data = validated_data.pop('id_encargado', None)
         encargado = None
