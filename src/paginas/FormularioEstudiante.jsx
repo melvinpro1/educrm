@@ -3,6 +3,15 @@
 
 import React, { useState, useEffect } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
+import { 
+  formatCedula, 
+  formatTelefono, 
+  validarCedula, 
+  validarTelefono, 
+  validarEmail,
+  extraerNumeros
+} from "../utils/validaciones";
+import { verificarCedulaExistente } from "../api/estudiantes";
 
 function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) {
   // 🔹 Estado único para todos los campos
@@ -21,6 +30,9 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
     correoEncargado: "",
     telefonoEncargado: "",
   });
+
+  const [errores, setErrores] = useState({});
+  const [validando, setValidando] = useState(false);
 
   // 🔹 Cargar datos iniciales si estamos en modo edición
   useEffect(() => {
@@ -42,48 +54,196 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
     }
   }, [datosIniciales]);
 
-  // Manejar cambios en cualquier input
+  // Manejar cambios con formateo automático
   const manejarCambio = (e) => {
     const { name, value } = e.target;
-    setFormulario((prev) => ({ ...prev, [name]: value }));
+    let nuevoValor = value;
+    let nuevosErrores = { ...errores };
+
+    // Formatear campos según tipo
+    if (name === 'cedula') {
+      nuevoValor = formatCedula(value);
+      delete nuevosErrores.cedula;
+    } else if (name === 'telefono' || name === 'telefonoEncargado') {
+      nuevoValor = formatTelefono(value);
+      delete nuevosErrores[name];
+    } else if (name === 'correoInstitucional' || name === 'correoPersonal' || name === 'correoEncargado') {
+      delete nuevosErrores[name];
+    }
+
+    setFormulario((prev) => ({ ...prev, [name]: nuevoValor }));
+    setErrores(nuevosErrores);
   };
 
-  const manejarSubmit = (e) => {
+  // Validar campo individual al perder foco
+  const validarCampo = async (name, value) => {
+    const nuevosErrores = { ...errores };
+
+    switch(name) {
+      case 'cedula':
+        if (!value) {
+          nuevosErrores.cedula = 'La cédula es obligatoria';
+        } else if (!validarCedula(value)) {
+          nuevosErrores.cedula = 'Formato de cédula inválido (#-####-####)';
+        } else {
+          // Verificar si ya existe
+          setValidando(true);
+          const existe = await verificarCedulaExistente(
+            value, 
+            datosIniciales?.id_estudiante
+          );
+          setValidando(false);
+          if (existe) {
+            nuevosErrores.cedula = 'Esta cédula ya está registrada';
+          } else {
+            delete nuevosErrores.cedula;
+          }
+        }
+        break;
+
+      case 'correoInstitucional':
+        if (!value) {
+          nuevosErrores.correoInstitucional = 'El correo institucional es obligatorio';
+        } else if (!validarEmail(value)) {
+          nuevosErrores.correoInstitucional = 'Formato de correo inválido';
+        } else if (formulario.correoPersonal && value === formulario.correoPersonal) {
+          nuevosErrores.correoInstitucional = 'Los correos deben ser diferentes';
+        } else {
+          delete nuevosErrores.correoInstitucional;
+        }
+        break;
+
+      case 'correoPersonal':
+        if (value && !validarEmail(value)) {
+          nuevosErrores.correoPersonal = 'Formato de correo inválido';
+        } else if (value && value === formulario.correoInstitucional) {
+          nuevosErrores.correoPersonal = 'Los correos deben ser diferentes';
+        } else {
+          delete nuevosErrores.correoPersonal;
+        }
+        break;
+
+      case 'correoEncargado':
+        if (!value) {
+          nuevosErrores.correoEncargado = 'El correo del encargado es obligatorio';
+        } else if (!validarEmail(value)) {
+          nuevosErrores.correoEncargado = 'Formato de correo inválido';
+        } else {
+          delete nuevosErrores.correoEncargado;
+        }
+        break;
+
+      case 'telefono':
+        if (value && !validarTelefono(value)) {
+          nuevosErrores.telefono = 'Formato de teléfono inválido (####-####)';
+        } else {
+          delete nuevosErrores.telefono;
+        }
+        break;
+
+      case 'telefonoEncargado':
+        if (value && !validarTelefono(value)) {
+          nuevosErrores.telefonoEncargado = 'Formato de teléfono inválido (####-####)';
+        } else {
+          delete nuevosErrores.telefonoEncargado;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    setErrores(nuevosErrores);
+  };
+
+  const manejarSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación rápida mínima: encargado obligatorio
-    if (
-      !formulario.nombreEncargado ||
-      !formulario.correoEncargado ||
-      !formulario.telefonoEncargado
-    ) {
-      alert(
-        "Los datos del encargado son obligatorios para registrar al estudiante."
+    // Validar todos los campos
+    const nuevosErrores = {};
+
+    // Validar cédula
+    if (!formulario.cedula) {
+      nuevosErrores.cedula = 'La cédula es obligatoria';
+    } else if (!validarCedula(formulario.cedula)) {
+      nuevosErrores.cedula = 'Formato de cédula inválido (#-####-####)';
+    }
+
+    // Validar correos
+    if (!formulario.correoInstitucional) {
+      nuevosErrores.correoInstitucional = 'El correo institucional es obligatorio';
+    } else if (!validarEmail(formulario.correoInstitucional)) {
+      nuevosErrores.correoInstitucional = 'Formato de correo inválido';
+    }
+
+    if (formulario.correoPersonal) {
+      if (!validarEmail(formulario.correoPersonal)) {
+        nuevosErrores.correoPersonal = 'Formato de correo inválido';
+      } else if (formulario.correoPersonal === formulario.correoInstitucional) {
+        nuevosErrores.correoPersonal = 'Los correos deben ser diferentes';
+      }
+    }
+
+    // Validar teléfonos
+    if (formulario.telefono && !validarTelefono(formulario.telefono)) {
+      nuevosErrores.telefono = 'Formato de teléfono inválido (####-####)';
+    }
+
+    if (formulario.telefonoEncargado && !validarTelefono(formulario.telefonoEncargado)) {
+      nuevosErrores.telefonoEncargado = 'Formato de teléfono inválido (####-####)';
+    }
+
+    // Validar encargado
+    if (!formulario.nombreEncargado) {
+      nuevosErrores.nombreEncargado = 'El nombre del encargado es obligatorio';
+    }
+    if (!formulario.correoEncargado) {
+      nuevosErrores.correoEncargado = 'El correo del encargado es obligatorio';
+    } else if (!validarEmail(formulario.correoEncargado)) {
+      nuevosErrores.correoEncargado = 'Formato de correo inválido';
+    }
+
+    // Verificar cédula existente solo si no estamos editando o si cambió
+    if (!datosIniciales || formulario.cedula !== datosIniciales.cedula) {
+      setValidando(true);
+      const existe = await verificarCedulaExistente(
+        formulario.cedula, 
+        datosIniciales?.id_estudiante
       );
+      setValidando(false);
+      if (existe) {
+        nuevosErrores.cedula = 'Esta cédula ya está registrada';
+      }
+    }
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores);
+      alert('Por favor corrija los errores en el formulario');
       return;
     }
 
     // Aquí le pasamos todo el objeto al padre (Estudiantes.jsx)
-    // Luego, en backend, esto será un solo payload:
-    // { estudiante: {...}, encargado: {...} }
     if (onGuardar) {
       onGuardar(formulario);
     }
 
-    // Opcional: limpiar formulario después
-    setFormulario({
-      cedula: "",
-      nombre: "",
-      correoInstitucional: "",
-      correoPersonal: "",
-      telefono: "",
-      colegioProcedencia: "",
-      grado: "Cuarto Nivel",
-      direccion: "",
-      nombreEncargado: "",
-      correoEncargado: "",
-      telefonoEncargado: "",
-    });
+    // Opcional: limpiar formulario después si es nuevo
+    if (!datosIniciales) {
+      setFormulario({
+        cedula: "",
+        nombre: "",
+        correoInstitucional: "",
+        correoPersonal: "",
+        telefono: "",
+        colegioProcedencia: "",
+        grado: "Cuarto Nivel",
+        direccion: "",
+        nombreEncargado: "",
+        correoEncargado: "",
+        telefonoEncargado: "",
+      });
+      setErrores({});
+    }
   };
 
   return (
@@ -100,9 +260,14 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
             name="cedula"
             value={formulario.cedula}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('cedula', e.target.value)}
             required
             disabled={!!datosIniciales} // No permitir cambiar cédula en edición
+            placeholder="#-####-####"
+            className={errores.cedula ? 'input-error' : ''}
           />
+          {errores.cedula && <span className="mensaje-error">{errores.cedula}</span>}
+          {validando && <span className="mensaje-info">Verificando cédula...</span>}
         </div>
       </div>
 
@@ -126,8 +291,12 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
             name="correoInstitucional"
             value={formulario.correoInstitucional}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('correoInstitucional', e.target.value)}
             required
+            placeholder="ejemplo@universidad.edu"
+            className={errores.correoInstitucional ? 'input-error' : ''}
           />
+          {errores.correoInstitucional && <span className="mensaje-error">{errores.correoInstitucional}</span>}
         </div>
         <div className="campo">
           <label>Correo Personal</label>
@@ -136,19 +305,26 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
             name="correoPersonal"
             value={formulario.correoPersonal}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('correoPersonal', e.target.value)}
+            placeholder="ejemplo@correo.com"
+            className={errores.correoPersonal ? 'input-error' : ''}
           />
+          {errores.correoPersonal && <span className="mensaje-error">{errores.correoPersonal}</span>}
         </div>
       </div>
 
       <div className="fila">
         <div className="campo">
-          <label>Teléfono *</label>
+          <label>Teléfono</label>
           <input
             name="telefono"
             value={formulario.telefono}
             onChange={manejarCambio}
-            required
+            onBlur={(e) => validarCampo('telefono', e.target.value)}
+            placeholder="####-####"
+            className={errores.telefono ? 'input-error' : ''}
           />
+          {errores.telefono && <span className="mensaje-error">{errores.telefono}</span>}
         </div>
         <div className="campo">
           <label>Colegio de procedencia</label>
@@ -219,22 +395,29 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
             name="correoEncargado"
             value={formulario.correoEncargado}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('correoEncargado', e.target.value)}
             required
             disabled={!!datosIniciales}
+            placeholder="encargado@correo.com"
+            className={errores.correoEncargado ? 'input-error' : ''}
           />
+          {errores.correoEncargado && <span className="mensaje-error">{errores.correoEncargado}</span>}
         </div>
       </div>
 
       <div className="fila">
         <div className="campo">
-          <label>Teléfono del Encargado *</label>
+          <label>Teléfono del Encargado</label>
           <input
             name="telefonoEncargado"
             value={formulario.telefonoEncargado}
             onChange={manejarCambio}
-            required
+            onBlur={(e) => validarCampo('telefonoEncargado', e.target.value)}
             disabled={!!datosIniciales}
+            placeholder="####-####"
+            className={errores.telefonoEncargado ? 'input-error' : ''}
           />
+          {errores.telefonoEncargado && <span className="mensaje-error">{errores.telefonoEncargado}</span>}
         </div>
       </div>
 
@@ -247,8 +430,12 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
         >
           Cancelar
         </button>
-        <button type="submit" className="btn-guardar">
-          {datosIniciales ? "Actualizar" : "Guardar"}
+        <button 
+          type="submit" 
+          className="btn-guardar"
+          disabled={validando || Object.keys(errores).length > 0}
+        >
+          {validando ? 'Validando...' : (datosIniciales ? "Actualizar" : "Guardar")}
         </button>
       </div>
     </form>

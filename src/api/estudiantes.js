@@ -7,6 +7,27 @@ export async function getEstudiantes() {
   return apiGet("/estudiantes/");
 }
 
+/**
+ * Verifica si una cédula ya está registrada
+ * @param {string} cedula - Cédula a verificar
+ * @param {number} excludeId - ID del estudiante a excluir (al editar)
+ * @returns {Promise<boolean>} True si la cédula ya existe
+ */
+export async function verificarCedulaExistente(cedula, excludeId = null) {
+  try {
+    const estudiantes = await apiGet("/estudiantes/");
+    const cedulaSinFormato = cedula.replace(/\D/g, '');
+    
+    return estudiantes.some(est => {
+      const cedulaEstudiante = est.cedula ? est.cedula.replace(/\D/g, '') : '';
+      return cedulaEstudiante === cedulaSinFormato && est.id_estudiante !== excludeId;
+    });
+  } catch (error) {
+    console.error("Error verificando cédula:", error);
+    return false;
+  }
+}
+
 export async function deleteEstudiante(id) {
   try {
     await apiDelete(`/estudiantes/${id}/`);

@@ -3,6 +3,11 @@
 
 import React, { useState, useEffect } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
+import { 
+  formatTelefono, 
+  validarTelefono, 
+  validarEmail
+} from "../utils/validaciones";
 
 function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
   // 🔹 Estado para los campos del encargado
@@ -11,6 +16,9 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
     correo: "",
     telefono: "",
   });
+
+  // 🔹 Estado para errores de validación
+  const [errores, setErrores] = useState({});
 
   // 🔹 Cargar datos iniciales si estamos en modo edición
   useEffect(() => {
@@ -23,25 +31,94 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
     }
   }, [datosIniciales]);
 
-  // Manejar cambios en cualquier input
+  // Manejar cambios con formateo automático
   const manejarCambio = (e) => {
     const { name, value } = e.target;
-    setFormulario((prev) => ({ ...prev, [name]: value }));
+    let nuevoValor = value;
+    let nuevosErrores = { ...errores };
+
+    // Formatear teléfono automáticamente
+    if (name === 'telefono') {
+      nuevoValor = formatTelefono(value);
+      delete nuevosErrores.telefono;
+    } else if (name === 'correo') {
+      delete nuevosErrores.correo;
+    } else if (name === 'nombre') {
+      delete nuevosErrores.nombre;
+    }
+
+    setFormulario((prev) => ({ ...prev, [name]: nuevoValor }));
+    setErrores(nuevosErrores);
+  };
+
+  // Validar campo individual al perder foco
+  const validarCampo = (name, value) => {
+    const nuevosErrores = { ...errores };
+
+    switch(name) {
+      case 'nombre':
+        if (!value.trim()) {
+          nuevosErrores.nombre = 'El nombre es obligatorio';
+        } else {
+          delete nuevosErrores.nombre;
+        }
+        break;
+
+      case 'correo':
+        if (!value) {
+          nuevosErrores.correo = 'El correo es obligatorio';
+        } else if (!validarEmail(value)) {
+          nuevosErrores.correo = 'Formato de correo inválido';
+        } else {
+          delete nuevosErrores.correo;
+        }
+        break;
+
+      case 'telefono':
+        if (!value) {
+          nuevosErrores.telefono = 'El teléfono es obligatorio';
+        } else if (!validarTelefono(value)) {
+          nuevosErrores.telefono = 'Formato de teléfono inválido (####-####)';
+        } else {
+          delete nuevosErrores.telefono;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    setErrores(nuevosErrores);
   };
 
   const manejarSubmit = (e) => {
     e.preventDefault();
 
-    // Validación básica
-    if (!formulario.nombre || !formulario.correo || !formulario.telefono) {
-      alert("Todos los campos son obligatorios.");
-      return;
+    // Validar todos los campos
+    const nuevosErrores = {};
+
+    // Validar nombre
+    if (!formulario.nombre.trim()) {
+      nuevosErrores.nombre = 'El nombre es obligatorio';
     }
 
-    // Validar formato de correo
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formulario.correo)) {
-      alert("Por favor ingrese un correo válido.");
+    // Validar correo
+    if (!formulario.correo) {
+      nuevosErrores.correo = 'El correo es obligatorio';
+    } else if (!validarEmail(formulario.correo)) {
+      nuevosErrores.correo = 'Formato de correo inválido';
+    }
+
+    // Validar teléfono
+    if (!formulario.telefono) {
+      nuevosErrores.telefono = 'El teléfono es obligatorio';
+    } else if (!validarTelefono(formulario.telefono)) {
+      nuevosErrores.telefono = 'Formato de teléfono inválido (####-####)';
+    }
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setErrores(nuevosErrores);
+      alert('Por favor corrija los errores en el formulario');
       return;
     }
 
@@ -57,6 +134,7 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
         correo: "",
         telefono: "",
       });
+      setErrores({});
     }
   };
 
@@ -74,9 +152,12 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
             name="nombre"
             value={formulario.nombre}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('nombre', e.target.value)}
             required
             placeholder="Ej: María González Ramírez"
+            className={errores.nombre ? 'input-error' : ''}
           />
+          {errores.nombre && <span className="mensaje-error">{errores.nombre}</span>}
         </div>
       </div>
 
@@ -88,10 +169,13 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
             name="correo"
             value={formulario.correo}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('correo', e.target.value)}
             required
             disabled={!!datosIniciales} // No permitir cambiar correo en edición (es único)
-            placeholder="Ej: maria.gonzalez@ccsp.ed.cr"
+            placeholder="Ej: maria.gonzalez@correo.com"
+            className={errores.correo ? 'input-error' : ''}
           />
+          {errores.correo && <span className="mensaje-error">{errores.correo}</span>}
         </div>
       </div>
 
@@ -102,9 +186,12 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
             name="telefono"
             value={formulario.telefono}
             onChange={manejarCambio}
+            onBlur={(e) => validarCampo('telefono', e.target.value)}
             required
-            placeholder="Ej: 8888-7777"
+            placeholder="####-####"
+            className={errores.telefono ? 'input-error' : ''}
           />
+          {errores.telefono && <span className="mensaje-error">{errores.telefono}</span>}
         </div>
       </div>
 
@@ -123,7 +210,11 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
         <button type="button" className="btn-cancelar" onClick={onCancelar}>
           Cancelar
         </button>
-        <button type="submit" className="btn-guardar">
+        <button 
+          type="submit" 
+          className="btn-guardar"
+          disabled={Object.keys(errores).length > 0}
+        >
           {datosIniciales ? "Actualizar" : "Guardar"}
         </button>
       </div>

@@ -280,4 +280,37 @@
   font-weight: 600;
   cursor: pointer;
   font-size: 13px;
+  transition: opacity 0.3s;
+}
+
+.btn-guardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estilos de validación */
+.input-error {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2;
+}
+
+.input-error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+}
+
+.mensaje-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+.mensaje-info {
+  color: #2563eb;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  font-style: italic;
 }
