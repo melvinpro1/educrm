@@ -26,6 +26,8 @@ export async function createEstudiante(formData) {
     nombre: formData.nombre,
     correo_institucional: formData.correoInstitucional,
     correo_personal: formData.correoPersonal || null,
+    telefono: formData.telefono || "",
+    colegio_procedencia: formData.colegioProcedencia || "",
     grado: formData.grado,                 // "Cuarto Nivel" / "Quinto Nivel"
     direccion_domicilio: formData.direccion || "",
     estado: true,

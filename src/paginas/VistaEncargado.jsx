@@ -132,6 +132,8 @@
 import React, { useEffect, useState } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
 import FormularioEncargado from "./FormularioEncargado";
+import Modal from "../componentes/ui/Modal";
+import DetalleEncargado from "../componentes/ui/DetalleEncargado";
 import { getEncargados, deleteEncargado, updateEncargado } from "../api/encargados";
 
 function Encargados() {
@@ -140,6 +142,8 @@ function Encargados() {
   const [encargados, setEncargados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [encargadoEditando, setEncargadoEditando] = useState(null);
+  const [modalVerOpen, setModalVerOpen] = useState(false);
+  const [encargadoViendo, setEncargadoViendo] = useState(null);
 
   // Cargar encargados desde el backend
   async function cargarEncargados() {
@@ -205,6 +209,17 @@ function Encargados() {
     setModo("editar");
   }
 
+  // Ver detalles de encargado
+  function handleVer(enc) {
+    setEncargadoViendo(enc);
+    setModalVerOpen(true);
+  }
+
+  // Cerrar modal de ver
+  function cerrarModalVer() {
+    setModalVerOpen(false);
+    setEncargadoViendo(null);
+  }
 
   // Si quieres que el buscador dispare petición al back:
   // useEffect(() => { cargarEncargados(); }, [busqueda]);
@@ -266,25 +281,40 @@ function Encargados() {
             key={e.id_encargado}
             className="tarjeta-estudiante"
           >
-            <div className="tarjeta-header">
-              <div className="tarjeta-icono">👨‍👧</div>
-              <div>
-                <h3>{e.nombre}</h3>
+            <div className="tarjeta-contenido">
+              <div className="tarjeta-header">
+                <div className="tarjeta-icono">👨‍👧</div>
+                <div>
+                  <h3>{e.nombre}</h3>
+                </div>
+              </div>
+
+              <div className="tarjeta-detalle">
+                <p>📧 {e.correo}</p>
+                <p>📞 {e.telefono}</p>
+                {/* si luego quieres contar estudiantes, aquí se puede agregar un campo extra */}
               </div>
             </div>
 
-            <div className="tarjeta-detalle">
-              <p>📧 {e.correo}</p>
-              <p>📞 {e.telefono}</p>
-              {/* si luego quieres contar estudiantes, aquí se puede agregar un campo extra */}
-            </div>
-
-            <div className="tarjeta-acciones">
-              <button className="btn-ver">👁 Ver</button>
-              <button className="btn-editar" onClick={() => handleEdit(e)}>✏️</button>
+            <div className="tarjeta-acciones-vertical">
+              <button 
+                className="btn-accion btn-ver"
+                onClick={() => handleVer(e)}
+                title="Ver detalles"
+              >
+                👁
+              </button>
+              <button 
+                className="btn-accion btn-editar" 
+                onClick={() => handleEdit(e)}
+                title="Editar"
+              >
+                ✏️
+              </button>
               <button
-                className="btn-eliminar"
+                className="btn-accion btn-eliminar"
                 onClick={() => handleDelete(e.id_encargado)}
+                title="Eliminar"
               >
                 🗑
               </button>
@@ -296,6 +326,15 @@ function Encargados() {
           <p>No se encontraron encargados.</p>
         )}
       </div>
+
+      {/* Modal para ver detalles */}
+      <Modal
+        isOpen={modalVerOpen}
+        onClose={cerrarModalVer}
+        title={encargadoViendo ? encargadoViendo.nombre : "Detalles del Encargado"}
+      >
+        {encargadoViendo && <DetalleEncargado encargado={encargadoViendo} />}
+      </Modal>
     </div>
   );
 }

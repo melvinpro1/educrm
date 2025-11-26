@@ -193,6 +193,8 @@
 import React, { useEffect, useState } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
 import FormularioEstudiante from "./FormularioEstudiante";
+import Modal from "../componentes/ui/Modal";
+import DetalleEstudiante from "../componentes/ui/DetalleEstudiante";
 import {
   getEstudiantes,
   deleteEstudiante,
@@ -207,6 +209,8 @@ function Estudiantes() {
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [estudianteEditando, setEstudianteEditando] = useState(null); // 🔹 Nuevo estado
+  const [modalVerOpen, setModalVerOpen] = useState(false); // 🔹 Estado para modal de ver
+  const [estudianteViendo, setEstudianteViendo] = useState(null); // 🔹 Estudiante a visualizar
 
   // 🔹 Cargar estudiantes desde el backend
   async function cargarEstudiantes() {
@@ -253,6 +257,8 @@ function Estudiantes() {
         nombre: formData.nombre,
         correo_institucional: formData.correoInstitucional,
         correo_personal: formData.correoPersonal,
+        telefono: formData.telefono,
+        colegio_procedencia: formData.colegioProcedencia,
         grado: formData.grado,
         direccion_domicilio: formData.direccion,
         // NO incluimos encargado - se edita en su propia sección
@@ -309,6 +315,18 @@ function Estudiantes() {
   const manejarEditar = (est) => {
     setEstudianteEditando(est);
     setModo("editar");
+  };
+
+  // 🔹 Ver detalles de estudiante
+  const manejarVer = (est) => {
+    setEstudianteViendo(est);
+    setModalVerOpen(true);
+  };
+
+  // 🔹 Cerrar modal de ver
+  const cerrarModalVer = () => {
+    setModalVerOpen(false);
+    setEstudianteViendo(null);
   };
 
   // Si está en modo formulario: mostramos solo el form
@@ -387,45 +405,55 @@ function Estudiantes() {
       <div className="estudiantes-grid">
         {estudiantesFiltrados.map((e) => (
           <div key={e.id_estudiante} className="tarjeta-estudiante">
-            <div className="tarjeta-header">
-              <div className="tarjeta-icono">🎓</div>
-              <div>
-                <h3>{e.nombre}</h3>
-                <p className="cedula">{e.cedula}</p>
+            <div className="tarjeta-contenido">
+              <div className="tarjeta-header">
+                <div className="tarjeta-icono">🎓</div>
+                <div>
+                  <h3>{e.nombre}</h3>
+                  <p className="cedula">{e.cedula}</p>
+                </div>
+              </div>
+
+              <div className="tarjeta-detalle">
+                <span
+                  className={
+                    "nivel " +
+                    (e.grado === "Cuarto Nivel" ? "violeta" : "verde")
+                  }
+                >
+                  {e.grado}
+                </span>
+                <span className="estado">
+                  {e.estado ? "activo" : "inactivo"}
+                </span>
+
+                <p>📧 {e.correo_institucional}</p>
+                {e.correo_personal && <p>📧 Pers.: {e.correo_personal}</p>}
+                {e.encargado && (
+                  <p>👨‍👧 Encargado: {e.encargado.nombre}</p>
+                )}
               </div>
             </div>
 
-            <div className="tarjeta-detalle">
-              <span
-                className={
-                  "nivel " +
-                  (e.grado === "Cuarto Nivel" ? "violeta" : "verde")
-                }
+            <div className="tarjeta-acciones-vertical">
+              <button 
+                className="btn-accion btn-ver" 
+                onClick={() => manejarVer(e)}
+                title="Ver detalles"
               >
-                {e.grado}
-              </span>
-              <span className="estado">
-                {e.estado ? "activo" : "inactivo"}
-              </span>
-
-              <p>📧 {e.correo_institucional}</p>
-              {e.correo_personal && <p>📧 Pers.: {e.correo_personal}</p>}
-              {e.encargado && (
-                <p>👨‍👧 Encargado: {e.encargado.nombre}</p>
-              )}
-            </div>
-
-            <div className="tarjeta-acciones">
-              <button className="btn-ver">👁 Ver</button>
+                👁
+              </button>
               <button
-                className="btn-editar"
+                className="btn-accion btn-editar"
                 onClick={() => manejarEditar(e)}
+                title="Editar"
               >
                 ✏️
               </button>
               <button
-                className="btn-eliminar"
+                className="btn-accion btn-eliminar"
                 onClick={() => manejarEliminar(e.id_estudiante)}
+                title="Eliminar"
               >
                 🗑
               </button>
@@ -437,6 +465,15 @@ function Estudiantes() {
           <p>No se encontraron estudiantes.</p>
         )}
       </div>
+
+      {/* Modal para ver detalles */}
+      <Modal
+        isOpen={modalVerOpen}
+        onClose={cerrarModalVer}
+        title={estudianteViendo ? estudianteViendo.nombre : "Detalles del Estudiante"}
+      >
+        {estudianteViendo && <DetalleEstudiante estudiante={estudianteViendo} />}
+      </Modal>
     </div>
   );
 }
