@@ -7,7 +7,6 @@ class Encargado(models.Model):
     nombre = models.CharField(max_length=150)
     correo = models.EmailField(max_length=150, unique=True)
     telefono = models.CharField(max_length=20)
-    estado = models.BooleanField(default=True)  # 👈 activo/inactivo
 
     def __str__(self):
         return self.nombre
@@ -30,8 +29,6 @@ class Estudiante(models.Model):
         on_delete=models.PROTECT,
         related_name='estudiantes'
     )
-
-    estado = models.BooleanField(default=True)  # 👈 activo/inactivo
 
     def __str__(self):
         return self.nombre

@@ -171,16 +171,36 @@ class EstudianteSerializer(serializers.ModelSerializer):
 '''
 from rest_framework import serializers
 from .models import Encargado, Estudiante
+import re
 
 
 class EncargadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Encargado
-        fields = ['id_encargado', 'nombre', 'correo', 'telefono', 'estado']
+        fields = ['id_encargado', 'nombre', 'correo', 'telefono']
         extra_kwargs = {
             # quitamos el validador de unique aquí para que no moleste en el anidado
             'correo': {'validators': []},
         }
+
+
+def _limpiar_telefono(t):
+    """Limpia formato de teléfono"""
+    if t is None:
+        return None
+    t = str(t).strip()
+    if t == "":
+        return None
+    # quitar espacios y guiones y otros separadores comunes
+    return re.sub(r'[\s\-]+', '', t)
+
+
+def _limpiar_correo(c):
+    """Limpia formato de correo"""
+    if c is None:
+        return None
+    c = str(c).strip()
+    return c if c != "" else None
 
 
 class EstudianteSerializer(serializers.ModelSerializer):
@@ -199,82 +219,62 @@ class EstudianteSerializer(serializers.ModelSerializer):
             'colegio_procedencia',
             'grado',
             'direccion_domicilio',
-            'estado',
             'encargado',
         ]
 
-    # ========== CREATE ==========
-    def _limpiar_telefono(t):
-        if t is None:
-         return None
-         t = str(t).strip()
-         if t == "":
-          return None
-    # quitar espacios y guiones y otros separadores comunes
-         return re.sub(r'[\s\-]+', '', t)
+    def validate(self, data):
+        """Validación personalizada"""
+        # Normalizar correos y teléfonos en data (para usar luego)
+        correo_inst = _limpiar_correo(data.get('correo_institucional'))
+        correo_pers = _limpiar_correo(data.get('correo_personal'))
+        encargado_data = data.get('id_encargado')
+        correo_enc = None
+        telefono_enc = None
 
+        if encargado_data:
+            correo_enc = _limpiar_correo(encargado_data.get('correo'))
+            telefono_enc = _limpiar_telefono(encargado_data.get('telefono'))
 
-def _limpiar_correo(c):
-    if c is None:
-        return None
-    c = str(c).strip()
-    return c if c != "" else None
+        # Reemplazamos en data los valores normalizados
+        if correo_inst is not None:
+            data['correo_institucional'] = correo_inst
+        if correo_pers is not None:
+            data['correo_personal'] = correo_pers
+        if encargado_data and correo_enc is not None:
+            encargado_data['correo'] = correo_enc
+        if encargado_data:
+            encargado_data['telefono'] = telefono_enc
 
-
-def validate(self, data):
-    # Normalizar correos y teléfonos en data (para usar luego)
-    correo_inst = _limpiar_correo(data.get('correo_institucional'))
-    correo_pers = _limpiar_correo(data.get('correo_personal'))
-    encargado_data = data.get('id_encargado')
-    correo_enc = None
-    telefono_enc = None
-
-    if encargado_data:
-        correo_enc = _limpiar_correo(encargado_data.get('correo'))
-        telefono_enc = _limpiar_telefono(encargado_data.get('telefono'))
-
-    # Reemplazamos en data los valores normalizados (opcional pero recomendable)
-    if correo_inst is not None:
-        data['correo_institucional'] = correo_inst
-    if correo_pers is not None:
-        data['correo_personal'] = correo_pers
-    if encargado_data and correo_enc is not None:
-        encargado_data['correo'] = correo_enc
-    if encargado_data:
-        encargado_data['telefono'] = telefono_enc  # puede ser None
-
-    # ---------- 1) validar que los 3 correos no se repitan entre sí ----------
-    correos = [c for c in (correo_inst, correo_pers, correo_enc) if c]
-    if len(correos) != len(set(correos)):
-        raise serializers.ValidationError(
-            "El correo institucional, el correo personal y el correo del encargado deben ser distintos entre sí."
-        )
-
-    # ---------- 2) teléfono encargado no igual al teléfono del estudiante ----------
-    telefono_est = _limpiar_telefono(data.get('telefono'))
-    if telefono_est is not None:
-        data['telefono'] = telefono_est  # normalizamos también el teléfono del estudiante
-
-    if telefono_enc and telefono_est and telefono_enc == telefono_est:
-        raise serializers.ValidationError(
-            {"id_encargado": "El teléfono del encargado no puede ser igual al teléfono del estudiante."}
-        )
-
-    # ---------- 3) teléfono encargado no exista en la BD (excluyendo propio si update) ----------
-    if telefono_enc:
-        qs = Encargado.objects.filter(telefono=telefono_enc)
-        # Si estamos en update y el estudiante ya tiene un encargado, excluirlo
-        if self.instance and getattr(self.instance, "id_encargado", None):
-            qs = qs.exclude(pk=self.instance.id_encargado.pk)
-        if qs.exists():
+        # Validar que los 3 correos no se repitan entre sí
+        correos = [c for c in (correo_inst, correo_pers, correo_enc) if c]
+        if len(correos) != len(set(correos)):
             raise serializers.ValidationError(
-                {"id_encargado": "Ya existe un encargado con este teléfono."}
+                "El correo institucional, el correo personal y el correo del encargado deben ser distintos entre sí."
             )
 
-    return data
+        # Teléfono encargado no igual al teléfono del estudiante
+        telefono_est = _limpiar_telefono(data.get('telefono'))
+        if telefono_est is not None:
+            data['telefono'] = telefono_est
 
+        if telefono_enc and telefono_est and telefono_enc == telefono_est:
+            raise serializers.ValidationError(
+                {"encargado": {"telefono": "El teléfono del encargado no puede ser igual al teléfono del estudiante."}}
+            )
 
+        # Validar teléfono encargado duplicado solo en modo UPDATE
+        # En CREATE, permitimos que se reutilice por correo (get_or_create)
+        if telefono_enc and self.instance:
+            # Solo validar si estamos actualizando
+            qs = Encargado.objects.filter(telefono=telefono_enc)
+            if getattr(self.instance, "id_encargado", None):
+                qs = qs.exclude(pk=self.instance.id_encargado.pk)
+            if qs.exists():
+                raise serializers.ValidationError(
+                    {"encargado": {"telefono": "Ya existe un encargado con este teléfono."}}
+                )
 
+        return data
 
     def create(self, validated_data):
         encargado_data = validated_data.pop('id_encargado', None)
@@ -290,9 +290,6 @@ def validate(self, data):
                     'telefono': encargado_data.get('telefono', ''),
                 }
             )
-            if not encargado.estado:
-                encargado.estado = True
-                encargado.save()
 
         estudiante = Estudiante.objects.create(
             id_encargado=encargado,
@@ -323,7 +320,6 @@ def validate(self, data):
                 nombre = encargado_data.get('nombre')
                 correo = encargado_data.get('correo')
                 telefono = encargado_data.get('telefono')
-                estado = encargado_data.get('estado')
 
                 if nombre is not None:
                     encargado_actual.nombre = nombre
@@ -333,12 +329,6 @@ def validate(self, data):
                     encargado_actual.correo = correo
                 if telefono is not None:
                     encargado_actual.telefono = telefono
-                if estado is not None:
-                    encargado_actual.estado = estado
-                else:
-                    # si estaba inactivo y lo estás usando otra vez, lo activamos
-                    if not encargado_actual.estado:
-                        encargado_actual.estado = True
 
                 encargado_actual.save()
 

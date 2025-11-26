@@ -268,9 +268,10 @@ function Estudiantes() {
 
       if (!result.ok) {
         alert(result.error);
-        return;
+        return; // No limpiar si hay error
       }
 
+      // Éxito: recargar y limpiar
       await cargarEstudiantes();
       setModo("lista");
       setEstudianteEditando(null);
@@ -280,9 +281,10 @@ function Estudiantes() {
 
       if (!result.ok) {
         alert(result.error);
-        return;
+        return; // No limpiar si hay error - el formulario mantiene los datos
       }
 
+      // Éxito: recargar y volver a lista
       await cargarEstudiantes();
       setModo("lista");
     }

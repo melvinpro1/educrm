@@ -51,14 +51,14 @@ export async function createEstudiante(formData) {
     colegio_procedencia: formData.colegioProcedencia || "",
     grado: formData.grado,                 // "Cuarto Nivel" / "Quinto Nivel"
     direccion_domicilio: formData.direccion || "",
-    estado: true,
     encargado: {
       nombre: formData.nombreEncargado,
       correo: formData.correoEncargado,
       telefono: formData.telefonoEncargado,
-      estado: true,
     },
   };
+
+  console.log('Payload enviado:', JSON.stringify(payload, null, 2));
 
   try {
     const res = await fetch(`${API_BASE}/estudiantes/`, {
@@ -68,12 +68,38 @@ export async function createEstudiante(formData) {
     });
 
     const data = await res.json().catch(() => null);
+    console.log('Respuesta del servidor:', data);
 
     if (!res.ok) {
-      const detail =
-        data?.detail || "Error al crear estudiante. Revisa los datos enviados.";
-      const err = new Error(detail);
-      err.detail = detail;
+      // Intentar extraer el mensaje de error más específico
+      let errorMsg = "Error al crear estudiante. Revisa los datos enviados.";
+      
+      if (data) {
+        if (typeof data === 'string') {
+          errorMsg = data;
+        } else if (data.detail) {
+          errorMsg = data.detail;
+        } else if (data.non_field_errors) {
+          errorMsg = data.non_field_errors.join(', ');
+        } else {
+          // Mostrar todos los errores de campos
+          const errors = Object.entries(data)
+            .map(([key, value]) => {
+              if (Array.isArray(value)) {
+                return `${key}: ${value.join(', ')}`;
+              } else if (typeof value === 'object') {
+                return `${key}: ${JSON.stringify(value)}`;
+              }
+              return `${key}: ${value}`;
+            })
+            .join('\n');
+          errorMsg = errors || errorMsg;
+        }
+      }
+      
+      console.error('Error completo:', errorMsg);
+      const err = new Error(errorMsg);
+      err.detail = errorMsg;
       throw err;
     }
 

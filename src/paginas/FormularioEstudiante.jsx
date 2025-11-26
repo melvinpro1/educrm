@@ -224,25 +224,7 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
 
     // Aquí le pasamos todo el objeto al padre (Estudiantes.jsx)
     if (onGuardar) {
-      onGuardar(formulario);
-    }
-
-    // Opcional: limpiar formulario después si es nuevo
-    if (!datosIniciales) {
-      setFormulario({
-        cedula: "",
-        nombre: "",
-        correoInstitucional: "",
-        correoPersonal: "",
-        telefono: "",
-        colegioProcedencia: "",
-        grado: "Cuarto Nivel",
-        direccion: "",
-        nombreEncargado: "",
-        correoEncargado: "",
-        telefonoEncargado: "",
-      });
-      setErrores({});
+      await onGuardar(formulario);
     }
   };
 

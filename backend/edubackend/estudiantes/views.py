@@ -13,37 +13,25 @@ class EncargadoViewSet(viewsets.ModelViewSet):
     queryset = Encargado.objects.all()
     serializer_class = EncargadoSerializer
 
-    def get_queryset(self):
-        # solo activos por defecto
-        return Encargado.objects.filter(estado=True)
-
-    '''def destroy(self, request, *args, **kwargs):
-        # soft delete del encargado
-        instance = self.get_object()
-        instance.estado = False
-        instance.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)'''
-    
     def destroy(self, request, *args, **kwargs):
         """
-        Soft delete del encargado SOLO si no tiene estudiantes activos.
+        Hard delete del encargado SOLO si no tiene estudiantes activos.
         """
         instance: Encargado = self.get_object()
 
-        # asumiendo related_name='estudiantes' en Estudiante.id_encargado
-        tiene_estudiantes_activos = instance.estudiantes.filter(estado=True).exists()
+        # Verificar si tiene estudiantes asociados
+        tiene_estudiantes = instance.estudiantes.exists()
 
-        if tiene_estudiantes_activos:
+        if tiene_estudiantes:
             return Response(
                 {
-                    "detail": "No se puede desactivar este encargado porque aún tiene estudiantes activos."
+                    "detail": "No se puede eliminar este encargado porque aún tiene estudiantes asociados."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # si no tiene estudiantes activos, lo desactivamos
-        instance.estado = False
-        instance.save()
+        # Hard delete
+        instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -51,26 +39,21 @@ class EstudianteViewSet(viewsets.ModelViewSet):
     queryset = Estudiante.objects.all()
     serializer_class = EstudianteSerializer
 
-    def get_queryset(self):
-        # solo activos por defecto
-        return Estudiante.objects.filter(estado=True)
-
     def destroy(self, request, *args, **kwargs):
-        # soft delete del estudiante
+        """
+        Hard delete del estudiante.
+        Si el encargado no tiene más estudiantes, también se elimina.
+        """
         instance: Estudiante = self.get_object()
         encargado = instance.id_encargado
 
-        # desactivar estudiante
-        instance.estado = False
-        instance.save()
+        # Eliminar estudiante (hard delete)
+        instance.delete()
 
-        # revisar si ese encargado tiene otros estudiantes activos
-        tiene_otro_estudiante_activo = encargado.estudiantes.filter(estado=True).exists()
-
-        if not tiene_otro_estudiante_activo:
-            # si no tiene, desactivamos también al encargado
-            encargado.estado = False
-            encargado.save()
+        # Revisar si ese encargado tiene otros estudiantes
+        if encargado and not encargado.estudiantes.exists():
+            # Si no tiene más estudiantes, eliminamos también al encargado
+            encargado.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -79,12 +62,11 @@ class EstudianteViewSet(viewsets.ModelViewSet):
         """
         Endpoint para obtener estadísticas del dashboard
         """
-        # Contar estudiantes activos e inactivos
-        estudiantes_activos = Estudiante.objects.filter(estado=True).count()
+        # Contar estudiantes totales
         estudiantes_totales = Estudiante.objects.count()
         
-        # Contar encargados activos
-        encargados_totales = Encargado.objects.filter(estado=True).count()
+        # Contar encargados totales
+        encargados_totales = Encargado.objects.count()
         
         # Contar correos enviados
         correos_enviados = Correo.objects.count()
@@ -93,9 +75,9 @@ class EstudianteViewSet(viewsets.ModelViewSet):
         from comunicaciones.models import CorreoEstudiante
         correos_totales = CorreoEstudiante.objects.count()
         
-        # Estudiantes por nivel (solo activos)
+        # Estudiantes por nivel
         estudiantes_por_nivel = (
-            Estudiante.objects.filter(estado=True)
+            Estudiante.objects.all()
             .values('grado')
             .annotate(cantidad=Count('id_estudiante'))
             .order_by('grado')
@@ -111,7 +93,7 @@ class EstudianteViewSet(viewsets.ModelViewSet):
         ]
         
         return Response({
-            'estudiantes_activos': estudiantes_activos,
+            'estudiantes_activos': estudiantes_totales,
             'estudiantes_totales': estudiantes_totales,
             'encargados_totales': encargados_totales,
             'comunicaciones_enviadas': correos_enviados,

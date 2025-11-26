@@ -46,12 +46,6 @@ function Home() {
     color: COLORES[nivel.nombre] || "#6B7280",
   }));
 
-  // Calcular porcentaje de estudiantes activos
-  const porcentajeActivos =
-    stats.estudiantes_totales > 0
-      ? Math.round((stats.estudiantes_activos / stats.estudiantes_totales) * 100)
-      : 0;
-
   return (
     <div className="home">
       {/* Encabezado */}
@@ -72,11 +66,8 @@ function Home() {
           {/* Tarjetas */}
           <section className="home-tarjetas">
             <div className="home-tarjeta azul">
-              <h3>Estudiantes Activos</h3>
-              <p className="home-numero">
-                {stats.estudiantes_activos} / {stats.estudiantes_totales}
-              </p>
-              <span className="home-extra">{porcentajeActivos}%</span>
+              <h3>Total de Estudiantes</h3>
+              <p className="home-numero">{stats.estudiantes_totales}</p>
             </div>
 
             <div className="home-tarjeta verde">
@@ -147,10 +138,10 @@ function Home() {
                 </div>
                 <div className="home-resumen-item">
                   <span className="home-resumen-label">
-                    ✅ Estudiantes Activos
+                    👨‍👧 Total de Encargados
                   </span>
                   <span className="home-resumen-valor">
-                    {stats.estudiantes_activos}
+                    {stats.encargados_totales}
                   </span>
                 </div>
                 <div className="home-resumen-item">
