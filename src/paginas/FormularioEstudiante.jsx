@@ -353,7 +353,7 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
       {datosIniciales && (
         <div className="info-edicion" style={{ marginBottom: "1rem", padding: "0.75rem", backgroundColor: "#fff3cd", borderLeft: "4px solid #ffc107", borderRadius: "4px" }}>
           <p style={{ color: "#856404", fontSize: "0.9rem", margin: 0 }}>
-            ℹ️ <strong>Nota:</strong> Los datos del encargado no pueden editarse desde aquí. 
+            <span className="bi bi-info-circle"></span> <strong>Nota:</strong> Los datos del encargado no pueden editarse desde aquí. 
             Para modificarlos, vaya a la sección "Gestión de Encargados".
           </p>
         </div>

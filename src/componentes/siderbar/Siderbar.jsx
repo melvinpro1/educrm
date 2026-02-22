@@ -98,7 +98,7 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {
       </div>
 
       <button className="sidebar-boton-cerrar" onClick={handleCerrarSesion}>
-        ⏻ Cerrar Sesión
+        Cerrar Sesión
       </button>
     </aside>
   );

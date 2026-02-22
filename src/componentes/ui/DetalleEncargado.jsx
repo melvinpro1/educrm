@@ -6,7 +6,7 @@ function DetalleEncargado({ encargado }) {
       {/* Sección: Información Personal */}
       <div className="detalle-seccion">
         <h3 className="detalle-seccion-titulo">
-          <span>👤</span> Información Personal
+          <span className="bi bi-person"></span> Información Personal
         </h3>
         <div className="detalle-grid">
           <div className="detalle-campo">
@@ -19,7 +19,7 @@ function DetalleEncargado({ encargado }) {
       {/* Sección: Información de Contacto */}
       <div className="detalle-seccion">
         <h3 className="detalle-seccion-titulo">
-          <span>📧</span> Información de Contacto
+          <span className="bi bi-envelope"></span> Información de Contacto
         </h3>
         <div className="detalle-grid">
           <div className="detalle-campo">

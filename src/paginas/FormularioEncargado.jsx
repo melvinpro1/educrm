@@ -199,7 +199,7 @@ function FormularioEncargado({ onGuardar, onCancelar, datosIniciales = null }) {
       {datosIniciales && (
         <div className="info-edicion">
           <p style={{ color: "#666", fontSize: "0.9rem", marginTop: "1rem" }}>
-            ℹ️ <strong>Nota:</strong> Al modificar este encargado, los cambios se
+            <span className="bi bi-info-circle"></span> <strong>Nota:</strong> Al modificar este encargado, los cambios se
             aplicarán a todos los estudiantes asociados.
           </p>
         </div>

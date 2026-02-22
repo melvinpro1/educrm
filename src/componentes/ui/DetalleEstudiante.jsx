@@ -6,7 +6,7 @@ function DetalleEstudiante({ estudiante }) {
       {/* Sección: Información Personal */}
       <div className="detalle-seccion">
         <h3 className="detalle-seccion-titulo">
-          <span>👤</span> Información Personal
+          <span className="bi bi-person"></span> Información Personal
         </h3>
         <div className="detalle-grid">
           <div className="detalle-campo">
@@ -25,7 +25,7 @@ function DetalleEstudiante({ estudiante }) {
       {/* Sección: Información Académica */}
       <div className="detalle-seccion">
         <h3 className="detalle-seccion-titulo">
-          <span>🎓</span> Información Académica
+          <span className="bi bi-book"></span> Información Académica
         </h3>
         <div className="detalle-grid">
           <div className="detalle-campo">
@@ -62,7 +62,7 @@ function DetalleEstudiante({ estudiante }) {
       {/* Sección: Información de Contacto */}
       <div className="detalle-seccion">
         <h3 className="detalle-seccion-titulo">
-          <span>📧</span> Información de Contacto
+          <span className="bi bi-envelope"></span> Información de Contacto
         </h3>
         <div className="detalle-grid">
           <div className="detalle-campo">
@@ -98,7 +98,7 @@ function DetalleEstudiante({ estudiante }) {
       {estudiante.encargado && (
         <div className="detalle-seccion">
           <h3 className="detalle-seccion-titulo">
-            <span>👨‍👧</span> Información del Encargado
+            <span className="bi bi-person-circle"></span> Información del Encargado
           </h3>
           <div className="detalle-grid">
             <div className="detalle-campo">

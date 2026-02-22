@@ -128,7 +128,7 @@ function Home() {
                 </ResponsiveContainer>
               ) : (
                 <p className="home-placeholder">
-                  📊 No hay estudiantes registrados aún.
+                  <span className="bi bi-exclamation-triangle"></span> No hay estudiantes registrados aún.
                 </p>
               )}
             </div>
@@ -138,7 +138,7 @@ function Home() {
               <div className="home-resumen">
                 <div className="home-resumen-item">
                   <span className="home-resumen-label">
-                    📚 Total de Estudiantes
+                    <span className="bi bi-people"></span> Total de Estudiantes
                   </span>
                   <span className="home-resumen-valor">
                     {stats.estudiantes_totales}
@@ -146,7 +146,7 @@ function Home() {
                 </div>
                 <div className="home-resumen-item">
                   <span className="home-resumen-label">
-                    👨‍👧 Total de Encargados
+                    <span className="bi bi-person-circle"></span> Total de Encargados
                   </span>
                   <span className="home-resumen-valor">
                     {stats.encargados_totales}
@@ -154,7 +154,7 @@ function Home() {
                 </div>
                 <div className="home-resumen-item">
                   <span className="home-resumen-label">
-                    📧 Comunicaciones Enviadas
+                    <span className="bi bi-envelope"></span> Comunicaciones Enviadas
                   </span>
                   <span className="home-resumen-valor">
                     {stats.comunicaciones_enviadas}
@@ -162,7 +162,7 @@ function Home() {
                 </div>
                 <div className="home-resumen-item">
                   <span className="home-resumen-label">
-                    ✉️ Correos Individuales
+                    <span className="bi bi-envelope-open"></span> Correos Individuales
                   </span>
                   <span className="home-resumen-valor">
                     {stats.correos_totales}
@@ -174,7 +174,7 @@ function Home() {
 
           {/* Historial de Acciones */}
           <section className="home-historial">
-            <h2>📋 Historial de Transacciones</h2>
+            <h2><span className="bi bi-clock-history"></span> Historial de Transacciones</h2>
             <div className="historial-container">
               {historial.length === 0 ? (
                 <p className="historial-vacio">No hay acciones registradas</p>
@@ -183,17 +183,17 @@ function Home() {
                   {historial.map((accion) => (
                     <div key={accion.id} className="historial-item">
                       <div className="historial-icono">
-                        {accion.tipo_accion.includes('crear') && '➕'}
-                        {accion.tipo_accion.includes('editar') && '✏️'}
-                        {accion.tipo_accion.includes('eliminar') && '🗑️'}
-                        {accion.tipo_accion.includes('enviar') && '📨'}
+                        {accion.tipo_accion.includes('crear') && <span className="bi bi-plus-circle"></span>}
+                        {accion.tipo_accion.includes('editar') && <span className="bi bi-pencil-square"></span>}
+                        {accion.tipo_accion.includes('eliminar') && <span className="bi bi-trash3"></span>}
+                        {accion.tipo_accion.includes('enviar') && <span className="bi bi-envelope-send"></span>}
                       </div>
                       <div className="historial-info">
                         <p className="historial-descripcion">{accion.descripcion}</p>
                         <p className="historial-detalles">{accion.detalles}</p>
                       </div>
                       <div className="historial-meta">
-                        <span className="historial-usuario">👤 {accion.usuario}</span>
+                        <span className="historial-usuario"><span className="bi bi-person"></span> {accion.usuario}</span>
                         <span className="historial-fecha">
                           {new Date(accion.fecha_hora).toLocaleString('es-CR', {
                             day: '2-digit',
