@@ -90,6 +90,9 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
 
+
+
+###Estar en C:\CRMEdu\educrm\backend\edubackend
 ### 3. Backend (Django)
 ```bash
 # Crear entorno virtual
@@ -99,10 +102,10 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
 # Instalar dependencias
-pip install -r backend/edubackend/requirements.txt
+pip install -r requirements.txt
 
 # Ejecutar migraciones
-cd backend/edubackend
+si no se esta en "cd backend/edubackend entrar".
 python manage.py migrate
 
 # Crear superusuario (opcional)
