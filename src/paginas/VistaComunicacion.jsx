@@ -325,7 +325,6 @@ function Comunicaciones() {
                   value={formData.tipoCorreo}
                   onChange={handleChange}
                 >
-                  <option value="institucional">Institucional</option>
                   <option value="recordatorio">Recordatorio</option>
                   <option value="urgente">Urgente</option>
                 </select>
@@ -379,14 +378,15 @@ function Comunicaciones() {
             <div className="acciones-form">
               <button
                 type="button"
-                className="btn-secundario"
+                className="btn-cancelar"
                 onClick={handleCancelar}
               >
                 Cancelar
               </button>
-              <button type="submit" className="btn-primario">
+              <button type="submit" className="btn-guardar">
                 Guardar Comunicación
               </button>
+             
             </div>
           </form>
         </section>
