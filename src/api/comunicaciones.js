@@ -19,17 +19,37 @@ export async function getComunicaciones(token) {
   return await res.json();
 }
 
-// POST /api/comunicaciones/correos/enviar/
-export async function enviarCorreo(payload, token) {
+// POST /api/comunicaciones/correos/enviar/ - CON ARCHIVOS ADJUNTOS
+export async function enviarCorreo(payload, archivos, token) {
+  // Usar FormData para enviar archivos
+  const formData = new FormData();
+  
+  // Agregar datos de texto
+  formData.append('asunto', payload.asunto);
+  formData.append('contenido', payload.contenido);
+  formData.append('tipo_correo', payload.tipo_correo);
+  formData.append('tipo_email_estudiante', payload.tipo_email_estudiante);
+  formData.append('segmento', payload.segmento);
+  
+  // Agregar IDs de estudiantes
+  payload.estudiantes_ids.forEach((id) => {
+    formData.append('estudiantes_ids', id);
+  });
+  
+  // Agregar archivos
+  archivos.forEach((archivo) => {
+    formData.append('adjuntos', archivo);
+  });
+
   const res = await fetch(
     `${BASE_URL}/api/comunicaciones/correos/enviar/`,
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // NO agregar Content-Type, dejar que el navegador lo calcule
       },
-      body: JSON.stringify(payload),
+      body: formData, // Enviar FormData
     }
   );
 

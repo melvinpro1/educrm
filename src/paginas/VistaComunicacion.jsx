@@ -2,8 +2,32 @@
 // Vista principal del Sistema de Comunicaciones.
 // Muestra estadísticas y un historial de comunicaciones registradas.
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../recursos/estilos/VistaComunicacion.css";
+
+// NUEVO: Función para crear FormData con archivos
+function crearFormData(datos, archivos) {
+  const formData = new FormData();
+  
+  // Agregar datos de texto
+  formData.append('asunto', datos.asunto);
+  formData.append('contenido', datos.contenido);
+  formData.append('tipo_correo', datos.tipo_correo);
+  formData.append('tipo_email_estudiante', datos.tipo_email_estudiante);
+  formData.append('segmento', datos.segmento);
+  
+  // Agregar IDs de estudiantes
+  datos.estudiantes_ids.forEach((id) => {
+    formData.append('estudiantes_ids', id);
+  });
+  
+  // Agregar archivos
+  archivos.forEach((archivo) => {
+    formData.append('adjuntos', archivo);
+  });
+  
+  return formData;
+}
 
 function Comunicaciones() {
   const [estudiantes, setEstudiantes] = useState([]);
@@ -18,10 +42,14 @@ function Comunicaciones() {
     segmento: "todos",        // todos | estudiantes | encargados
     gradoEstudiante: "todos", // cuartos | quintos | todos
     tipoEmailEstudiante: "institucional", // institucional | personal | ambos
+    adjuntos: [], // NUEVO: archivos adjuntos
   });
 
   // IDs de estudiantes a los que se enviará el correo
   const [estudiantesSeleccionados, setEstudiantesSeleccionados] = useState([]);
+  
+  // NUEVO: Referencia al input file para limpiar después
+  const inputFileRef = useRef(null);
 
   const totalComunicaciones = comunicaciones.length;
   const totalEnviados = comunicaciones.reduce(
@@ -154,8 +182,13 @@ function Comunicaciones() {
       segmento: "todos",
       gradoEstudiante: "todos",
       tipoEmailEstudiante: "institucional",
+      adjuntos: [], // NUEVO: limpiar adjuntos
     });
     setEstudiantesSeleccionados([]);
+    // Limpiar el input file también
+    if (inputFileRef.current) {
+      inputFileRef.current.value = "";
+    }
   };
 
   const handleChange = (e) => {
@@ -168,17 +201,37 @@ function Comunicaciones() {
     // el useEffect de arriba se encarga.
   };
 
+  // NUEVO: Manejar subida de archivos (agregar, no reemplazar)
+  const handleFileChange = (e) => {
+    const newFiles = Array.from(e.target.files);
+    setFormData((prev) => {
+      // Verificar que no haya duplicados
+      const nombresExistentes = new Set(prev.adjuntos.map(f => f.name));
+      const archivosFiltrados = newFiles.filter(f => !nombresExistentes.has(f.name));
+      return {
+        ...prev,
+        adjuntos: [...prev.adjuntos, ...archivosFiltrados],
+      };
+    });
+    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
+    if (inputFileRef.current) {
+      inputFileRef.current.value = "";
+    }
+  };
+
+  // NUEVO: Eliminar archivo seleccionado
+  const handleRemoveFile = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      adjuntos: prev.adjuntos.filter((_, idx) => idx !== indexToRemove),
+    }));
+    // Limpiar el input file para permitir nuevas selecciones
+    if (inputFileRef.current) {
+      inputFileRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e) => {
-    // e.preventDefault();
-
-    // if (estudiantesSeleccionados.length === 0) {
-    //   alert(
-    //     "No hay estudiantes seleccionados para esta segmentación. " +
-    //     "Verifica segmento / grado / tipo de correo."
-    //   );
-    //   return;
-    // }
-
     e.preventDefault();
 
     // Solo validamos estudiantes cuando el segmento ES estudiantes
@@ -200,16 +253,17 @@ function Comunicaciones() {
       tipo_email_estudiante: formData.tipoEmailEstudiante,
       segmento: formData.segmento,
       estudiantes_ids: estudiantesSeleccionados,
+      // NUEVO: Se enviarán como multipart/form-data
     };
 
     try {
       const res = await fetch("http://localhost:8000/api/comunicaciones/correos/enviar/", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // NO agregar Content-Type: header, dejar que el navegador lo calcule
         },
-        body: JSON.stringify(payload),
+        body: crearFormData(payload, formData.adjuntos), // NUEVO: FormData
       });
 
       if (!res.ok) {
@@ -317,6 +371,49 @@ function Comunicaciones() {
               />
             </div>
 
+            {/* Campo para adjuntos */}
+            <div className="campo">
+              <label>Adjuntar Archivos (Opcional)</label>
+              
+              {/* Input file con contador */}
+              <div className="input-archivo-wrapper">
+                <input
+                  ref={inputFileRef}
+                  className="input-archivo"
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif"
+                />
+                <span className="contador-archivos">
+                  {formData.adjuntos.length === 0
+                    ? "Seleccionar archivos"
+                    : formData.adjuntos.length === 1
+                    ? "1 archivo seleccionado"
+                    : `${formData.adjuntos.length} archivos seleccionados`}
+                </span>
+              </div>
+              
+              {/* Archivos seleccionados - mostrados ABAJO con X */}
+              {formData.adjuntos.length > 0 && (
+                <div className="archivos-abajo">
+                  {formData.adjuntos.map((archivo, idx) => (
+                    <span key={idx} className="chip-archivo-abajo">
+                      {archivo.name}
+                      <button
+                        type="button"
+                        className="btn-x-abajo"
+                        onClick={() => handleRemoveFile(idx)}
+                        title="Eliminar archivo"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="fila-dos-columnas">
               <div className="campo">
                 <label>Tipo de Correo *</label>
@@ -374,6 +471,8 @@ function Comunicaciones() {
                 </div>
               </div>
             )}
+
+            
 
             <div className="acciones-form">
               <button
@@ -447,6 +546,27 @@ function Comunicaciones() {
                   </span>
                 ))}
               </div>
+
+              {/* NUEVO: Mostrar adjuntos */}
+              {com.adjuntos && com.adjuntos.length > 0 && (
+                <>
+                  <p className="comms-label">Adjuntos ({com.adjuntos.length}):</p>
+                  <div className="comms-adjuntos">
+                    {com.adjuntos.map((adj, i) => (
+                      <a 
+                        key={i} 
+                        href={adj.archivo}
+                        download={adj.nombre_original}
+                        className="chip-adjunto"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        📎 {adj.nombre_original}
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))}

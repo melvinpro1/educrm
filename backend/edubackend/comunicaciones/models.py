@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-
 from django.utils import timezone
 
 
@@ -59,3 +56,27 @@ class CorreoEstudiante(models.Model):
 
     def __str__(self):
         return f"Correo {self.id_correo_id} → Estudiante {self.id_estudiante_id}"
+
+
+class Adjunto(models.Model):
+    id_adjunto = models.AutoField(primary_key=True)
+    id_correo = models.ForeignKey(
+        'Correo',
+        on_delete=models.CASCADE,
+        db_column='id_correo',
+        related_name='adjuntos'
+    )
+    archivo = models.FileField(
+        upload_to='comunicaciones/%Y/%m/%d/',
+        help_text='Archivos permitidos: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG, JPEG, GIF'
+    )
+    nombre_original = models.CharField(max_length=255)
+    tipo_archivo = models.CharField(max_length=50)  # pdf, doc, docx, img, etc.
+    fecha_subida = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.nombre_original} - Correo {self.id_correo_id}"
+
+    class Meta:
+        verbose_name = "Adjunto"
+        verbose_name_plural = "Adjuntos"

@@ -147,6 +147,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.core.mail import EmailMessage
 from django.conf import settings
+from os.path import basename
 
 from .models import Correo
 from .serializers import EnviarCorreoSerializer, CorreoSerializer
@@ -226,6 +227,7 @@ class EnviarCorreoView(APIView):
         asunto = data["asunto"]
         contenido = data["contenido"]
 
+        # ========== NUEVO: ENVIAR CON ADJUNTOS ==========
         email = EmailMessage(
             subject=asunto,
             body=contenido,
@@ -233,6 +235,11 @@ class EnviarCorreoView(APIView):
             to=[],
             bcc=correos
         )
+
+        # Adjuntar archivos
+        for adjunto in correo_obj.adjuntos.all():
+            email.attach_file(adjunto.archivo.path)
+
         email.send(fail_silently=False)
 
         return Response(
