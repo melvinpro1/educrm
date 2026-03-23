@@ -338,3 +338,105 @@
   display: block;
   font-style: italic;
 }
+
+/* ========== ESTILOS AUTOCOMPLETE COLEGIOS ========== */
+
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+  z-index: 100;
+}
+
+.autocomplete-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 13px;
+  outline: none;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.autocomplete-input:focus {
+  border-color: #003ea5;
+  box-shadow: 0 0 0 2px rgba(0, 62, 165, 0.1);
+}
+
+.autocomplete-input::placeholder {
+  color: #9ca3af;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0 0 8px 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1100;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  margin-top: -1px;
+}
+
+.autocomplete-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.autocomplete-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.activo {
+  background-color: #dbe7f9;
+  color: #003ea5;
+  font-weight: 500;
+}
+
+.autocomplete-item .bi {
+  font-size: 14px;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.autocomplete-item.activo .bi {
+  color: #003ea5;
+}
+
+.autocomplete-no-resultados {
+  padding: 16px 12px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+  background-color: #f9fafb;
+}
+
+/* Scrollbar personalizado */
+.autocomplete-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

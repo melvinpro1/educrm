@@ -12,6 +12,7 @@ import {
   extraerNumeros
 } from "../utils/validaciones";
 import { verificarCedulaExistente } from "../api/estudiantes";
+import AutocompleteColegios from "../componentes/ui/AutocompleteColegios";
 
 function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) {
   // 🔹 Estado único para todos los campos
@@ -310,10 +311,11 @@ function FormularioEstudiante({ onGuardar, onCancelar, datosIniciales = null }) 
         </div>
         <div className="campo">
           <label>Colegio de procedencia</label>
-          <input
-            name="colegioProcedencia"
-            value={formulario.colegioProcedencia}
-            onChange={manejarCambio}
+          <AutocompleteColegios
+            valor={formulario.colegioProcedencia}
+            onChange={(nuevoValor) => 
+              setFormulario(prev => ({ ...prev, colegioProcedencia: nuevoValor }))
+            }
           />
         </div>
       </div>
