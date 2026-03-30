@@ -263,7 +263,7 @@ function Comunicaciones() {
         <div className="comms-card">
           <p className="comms-card-titulo">Correos Enviados</p>
           <div className="comms-card-body">
-            <div className="comms-icono verde"><span className="bi bi-envelope-check"></span></div>
+            <div className="comms-icono verde"><span className="bi bi-envelope-check-fill"></span></div>
             <div>
               <h2>{totalEnviados}</h2>
               <span>Total</span>
@@ -379,12 +379,12 @@ function Comunicaciones() {
             <div className="acciones-form">
               <button
                 type="button"
-                className="btn-secundario"
+                className="btn btn-danger"
                 onClick={handleCancelar}
               >
                 Cancelar
               </button>
-              <button type="submit" className="btn-primario">
+              <button type="submit" className="btn btn-success">
                 Guardar Comunicación
               </button>
             </div>
