@@ -40,7 +40,7 @@ db.sqlite3-journal
 *.log
 local_settings.py
 /static
-/media
+backend/edubackend/media/
 
 # Entornos virtuales
 .venv/

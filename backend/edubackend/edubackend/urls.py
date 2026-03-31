@@ -19,6 +19,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from estudiantes.views import EncargadoViewSet, EstudianteViewSet
 from estudiantes.auth_views import login_view, logout_view, register_view
+from django.conf import settings
+from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r'encargados', EncargadoViewSet)
@@ -32,3 +34,5 @@ urlpatterns = [
     path('api/auth/logout/', logout_view, name='logout'),
     path('api/auth/register/', register_view, name='register'),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
