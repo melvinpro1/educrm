@@ -424,3 +424,199 @@
   background-color: #bfdbfe;
   border-color: #3b82f6;
 }
+.input-archivo-oculto {
+  display: none;
+}
+
+.drop-zone {
+  border: 2px dashed #c7d2e3;
+  border-radius: 14px;
+  background: #f8faff;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drop-zone:hover {
+  border-color: #2f4bb2;
+  background: #eef3ff;
+}
+
+.drop-zone.activo {
+  border-color: #2f4bb2;
+  background: #e8efff;
+  transform: scale(1.01);
+}
+
+.drop-zone-content p {
+  margin: 8px 0 4px;
+  color: #243b8f;
+}
+
+.drop-zone-content small {
+  display: block;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.icono-adjunto {
+  font-size: 28px;
+}
+
+.limite-archivos {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.error-archivos {
+  margin-top: 8px;
+  color: #c62828;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.lista-archivos {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.archivo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid #e3e8f3;
+  border-radius: 12px;
+  padding: 10px 14px;
+  animation: aparecerArchivo 0.25s ease;
+}
+
+.archivo-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.archivo-info p {
+  margin: 0;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.archivo-info small {
+  color: #6b7280;
+}
+
+.archivo-icono {
+  font-size: 22px;
+}
+
+.btn-eliminar-archivo {
+  border: none;
+  background: #ffe5e5;
+  color: #c62828;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btn-eliminar-archivo:hover {
+  background: #ffd2d2;
+}
+
+@keyframes aparecerArchivo {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.archivo-icono i {
+  font-size: 20px;
+}
+
+/* colores por tipo */
+.bi-file-earmark-pdf {
+  color: #dc2626; /* rojo */
+}
+
+.bi-image {
+  color: #16a34a; /* verde */
+}
+
+.bi-file-earmark-word {
+  color: #2563eb; /* azul */
+}
+
+.bi-file-earmark-excel {
+  color: #15803d; /* verde oscuro */
+}
+
+.bi-paperclip {
+  color: #6b7280; /* gris */
+}
+.icono-adjunto {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.icono-adjunto i {
+  font-size: 36px;
+  color: #7c8db5;
+}
+.drop-zone:hover .icono-adjunto i {
+  color: #003ea5;
+  transform: scale(1.1);
+}
+
+.campo input,
+.campo textarea {
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+
+.campo textarea {
+  resize: none; /* sin esto se ve cuadrado btw */
+  min-height: 120px;
+  line-height: 1.5;
+  padding: 12px 14px;
+}
+
+
+.campo input {
+  height: 44px;
+  padding: 0 14px;
+}
+
+.bloque-adjuntos {
+  margin-top: 20px;
+  padding-top: 8px;
+}
+
+.bloque-adjuntos .comms-label {
+  margin: 0 0 12px 0;
+}
+
+.bloque-adjuntos .comms-adjuntos {
+  margin-top: 0;
+}
+
+.chip-adjunto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

@@ -34,6 +34,8 @@ function Comunicaciones() {
   const [comunicaciones, setComunicaciones] = useState([]);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [dragActivo, setDragActivo] = useState(false);
+  const [errorArchivos, setErrorArchivos] = useState("");
 
   const [formData, setFormData] = useState({
     asunto: "",
@@ -185,7 +187,7 @@ function Comunicaciones() {
       adjuntos: [], // NUEVO: limpiar adjuntos
     });
     setEstudiantesSeleccionados([]);
-    // Limpiar el input file también
+    setErrorArchivos("");
     if (inputFileRef.current) {
       inputFileRef.current.value = "";
     }
@@ -202,22 +204,76 @@ function Comunicaciones() {
   };
 
   // NUEVO: Manejar subida de archivos (agregar, no reemplazar)
-  const handleFileChange = (e) => {
-    const newFiles = Array.from(e.target.files);
-    setFormData((prev) => {
-      // Verificar que no haya duplicados
-      const nombresExistentes = new Set(prev.adjuntos.map(f => f.name));
-      const archivosFiltrados = newFiles.filter(f => !nombresExistentes.has(f.name));
-      return {
-        ...prev,
-        adjuntos: [...prev.adjuntos, ...archivosFiltrados],
-      };
+  const procesarArchivos = (files) => {
+  const newFiles = Array.from(files);
+  const MAX_ARCHIVOS = 5;
+  const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+  const formatosPermitidos = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+  ];
+
+  setErrorArchivos("");
+
+  setFormData((prev) => {
+    const nombresExistentes = new Set(prev.adjuntos.map((f) => f.name));
+
+    const sinDuplicados = newFiles.filter((f) => !nombresExistentes.has(f.name));
+
+    const validos = sinDuplicados.filter((file) => {
+      if (!formatosPermitidos.includes(file.type)) {
+        setErrorArchivos("Uno o más archivos tienen un formato no permitido.");
+        return false;
+      }
+      if (file.size > MAX_SIZE) {
+        setErrorArchivos("Uno o más archivos superan el tamaño máximo de 10 MB.");
+        return false;
+      }
+      return true;
     });
-    // Limpiar el input para permitir seleccionar el mismo archivo nuevamente
-    if (inputFileRef.current) {
-      inputFileRef.current.value = "";
+
+    const totalFinal = [...prev.adjuntos, ...validos];
+
+    if (totalFinal.length > MAX_ARCHIVOS) {
+      setErrorArchivos("Solo puedes adjuntar un máximo de 5 archivos.");
+      return prev;
     }
-  };
+
+    return {
+      ...prev,
+      adjuntos: totalFinal,
+    };
+  });
+
+  if (inputFileRef.current) {
+    inputFileRef.current.value = "";
+  }
+};
+
+const handleFileChange = (e) => {
+  procesarArchivos(e.target.files);
+};
+const handleDragOver = (e) => {
+  e.preventDefault();
+  setDragActivo(true);
+};
+
+const handleDragLeave = (e) => {
+  e.preventDefault();
+  setDragActivo(false);
+};
+
+const handleDrop = (e) => {
+  e.preventDefault();
+  setDragActivo(false);
+  procesarArchivos(e.dataTransfer.files);
+};
 
   // NUEVO: Eliminar archivo seleccionado
   const handleRemoveFile = (indexToRemove) => {
@@ -373,46 +429,84 @@ function Comunicaciones() {
 
             {/* Campo para adjuntos */}
             <div className="campo">
-              <label>Adjuntar Archivos (Opcional)</label>
-              
-              {/* Input file con contador */}
-              <div className="input-archivo-wrapper">
-                <input
-                  ref={inputFileRef}
-                  className="input-archivo"
-                  type="file"
-                  multiple
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif"
-                />
-                <span className="contador-archivos">
-                  {formData.adjuntos.length === 0
-                    ? "Seleccionar archivos"
-                    : formData.adjuntos.length === 1
-                    ? "1 archivo seleccionado"
-                    : `${formData.adjuntos.length} archivos seleccionados`}
-                </span>
-              </div>
-              
-              {/* Archivos seleccionados - mostrados ABAJO con X */}
-              {formData.adjuntos.length > 0 && (
-                <div className="archivos-abajo">
-                  {formData.adjuntos.map((archivo, idx) => (
-                    <span key={idx} className="chip-archivo-abajo">
-                      {archivo.name}
-                      <button
-                        type="button"
-                        className="btn-x-abajo"
-                        onClick={() => handleRemoveFile(idx)}
-                        title="Eliminar archivo"
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
+  <label>Adjuntar Archivos (Opcional)</label>
+
+  <div
+    className={`drop-zone ${dragActivo ? "activo" : ""}`}
+    onClick={() => inputFileRef.current?.click()}
+    onDragOver={handleDragOver}
+    onDragLeave={handleDragLeave}
+    onDrop={handleDrop}
+  >
+    <input
+      ref={inputFileRef}
+      className="input-archivo-oculto"
+      type="file"
+      multiple
+      onChange={handleFileChange}
+      accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif"
+    />
+
+    <div className="drop-zone-content">
+      <div className="icono-adjunto">
+     <i className="bi bi-file-earmark-arrow-up"></i>
+</div>
+      <p>
+        <strong>Haz clic o arrastra archivos aquí</strong>
+      </p>
+      <small>
+        Formatos permitidos: PDF, Word, Excel, PNG, JPG, GIF
+      </small>
+      <small className="limite-archivos">
+        Máximo 5 archivos, 10 MB por archivo
+      </small>
+    </div>
+  </div>
+
+  {errorArchivos && <p className="error-archivos">{errorArchivos}</p>}
+
+  {formData.adjuntos.length > 0 && (
+    <div className="lista-archivos">
+      {formData.adjuntos.map((archivo, idx) => (
+        <div key={idx} className="archivo-card">
+          <div className="archivo-info">
+            <span className="archivo-icono">
+            <i
+              className={
+                archivo.type.includes("pdf")
+                  ? "bi bi-file-earmark-pdf"
+                  : archivo.type.includes("image")
+                  ? "bi bi-image"
+                  : archivo.type.includes("word")
+                  ? "bi bi-file-earmark-word"
+                  : archivo.type.includes("excel") ||
+                    archivo.name.endsWith(".xls") ||
+                    archivo.name.endsWith(".xlsx")
+                  ? "bi bi-file-earmark-excel"
+                  : "bi bi-paperclip"
+              }
+            ></i>
+          </span>
+
+            <div>
+              <p>{archivo.name}</p>
+              <small>{(archivo.size / 1024 / 1024).toFixed(2)} MB</small>
             </div>
+          </div>
+
+          <button
+            type="button"
+            className="btn-eliminar-archivo"
+            onClick={() => handleRemoveFile(idx)}
+            title="Eliminar archivo"
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
             <div className="fila-dos-columnas">
               <div className="campo">
@@ -547,26 +641,41 @@ function Comunicaciones() {
                 ))}
               </div>
 
-              {/* NUEVO: Mostrar adjuntos */}
               {com.adjuntos && com.adjuntos.length > 0 && (
-                <>
-                  <p className="comms-label">Adjuntos ({com.adjuntos.length}):</p>
-                  <div className="comms-adjuntos">
-                    {com.adjuntos.map((adj, i) => (
-                      <a 
-                        key={i} 
-                        href={adj.archivo}
-                        download={adj.nombre_original}
-                        className="chip-adjunto"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        📎 {adj.nombre_original}
-                      </a>
-                    ))}
-                  </div>
-                </>
-              )}
+              <div className="bloque-adjuntos">
+                <p className="comms-label">
+                  Adjuntos ({com.adjuntos.length}):
+                </p>
+
+                <div className="comms-adjuntos">
+                  {com.adjuntos.map((adj, i) => (
+                    <a 
+                      key={i} 
+                      href={adj.archivo}
+                      download={adj.nombre_original}
+                      className="chip-adjunto"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <i
+                        className={
+                          adj.nombre_original.toLowerCase().endsWith(".pdf")
+                            ? "bi bi-file-earmark-pdf"
+                            : /\.(jpg|jpeg|png|gif)$/i.test(adj.nombre_original)
+                            ? "bi bi-image"
+                            : /\.(doc|docx)$/i.test(adj.nombre_original)
+                            ? "bi bi-file-earmark-word"
+                            : /\.(xls|xlsx)$/i.test(adj.nombre_original)
+                            ? "bi bi-file-earmark-excel"
+                            : "bi bi-paperclip"
+                        }
+                      ></i>
+                      {adj.nombre_original}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
             </div>
           </div>
         ))}
