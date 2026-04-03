@@ -102,15 +102,16 @@ function Home() {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={datosGrafico}
+                     data={datosGrafico}
                       dataKey="valor"
                       nameKey="nombre"
                       cx="50%"
                       cy="45%"
                       outerRadius={80}
-                      label
+                      label={({ value }) => value}
+                      labelLine={false}
                     >
-                      {datosGrafico.map((nivel, i) => (
+                     {datosGrafico.map((nivel, i) => (
                         <Cell key={i} fill={nivel.color} />
                       ))}
                     </Pie>

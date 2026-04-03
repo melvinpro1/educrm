@@ -1,4 +1,4 @@
-// 📁 src/paginas/FormularioEstudiante.jsx
+//  src/paginas/FormularioEstudiante.jsx
 // Formulario para registrar/editar Estudiante + Encargado al mismo tiempo.
 
 import React, { useState, useEffect } from "react";

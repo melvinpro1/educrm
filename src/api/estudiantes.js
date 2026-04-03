@@ -1,5 +1,4 @@
-// src/api/estudiantes.js
-import { apiGet, apiDelete, apiPatch } from "./client";
+import { apiGet, apiDelete } from "./client";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
 
@@ -7,20 +6,19 @@ export async function getEstudiantes() {
   return apiGet("/estudiantes/");
 }
 
-/**
- * Verifica si una cédula ya está registrada
- * @param {string} cedula - Cédula a verificar
- * @param {number} excludeId - ID del estudiante a excluir (al editar)
- * @returns {Promise<boolean>} True si la cédula ya existe
- */
 export async function verificarCedulaExistente(cedula, excludeId = null) {
   try {
     const estudiantes = await apiGet("/estudiantes/");
-    const cedulaSinFormato = cedula.replace(/\D/g, '');
-    
-    return estudiantes.some(est => {
-      const cedulaEstudiante = est.cedula ? est.cedula.replace(/\D/g, '') : '';
-      return cedulaEstudiante === cedulaSinFormato && est.id_estudiante !== excludeId;
+    const cedulaSinFormato = cedula.replace(/\D/g, "");
+
+    return estudiantes.some((est) => {
+      const cedulaEstudiante = est.cedula
+        ? est.cedula.replace(/\D/g, "")
+        : "";
+      return (
+        cedulaEstudiante === cedulaSinFormato &&
+        est.id_estudiante !== excludeId
+      );
     });
   } catch (error) {
     console.error("Error verificando cédula:", error);
@@ -41,7 +39,6 @@ export async function deleteEstudiante(id) {
 }
 
 export async function createEstudiante(formData) {
-  // ⚠ formData viene tal cual del FormularioEstudiante
   const payload = {
     cedula: formData.cedula,
     nombre: formData.nombre,
@@ -49,7 +46,7 @@ export async function createEstudiante(formData) {
     correo_personal: formData.correoPersonal || null,
     telefono: formData.telefono || "",
     colegio_procedencia: formData.colegioProcedencia || "",
-    grado: formData.grado,                 // "Cuarto Nivel" / "Quinto Nivel"
+    grado: formData.grado,
     direccion_domicilio: formData.direccion || "",
     encargado: {
       nombre: formData.nombreEncargado,
@@ -57,8 +54,6 @@ export async function createEstudiante(formData) {
       telefono: formData.telefonoEncargado,
     },
   };
-
-  console.log('Payload enviado:', JSON.stringify(payload, null, 2));
 
   try {
     const res = await fetch(`${API_BASE}/estudiantes/`, {
@@ -68,36 +63,29 @@ export async function createEstudiante(formData) {
     });
 
     const data = await res.json().catch(() => null);
-    console.log('Respuesta del servidor:', data);
 
     if (!res.ok) {
-      // Intentar extraer el mensaje de error más específico
-      let errorMsg = "Error al crear estudiante. Revisa los datos enviados.";
-      
+      let errorMsg = "Error al crear estudiante.";
+
       if (data) {
-        if (typeof data === 'string') {
+        if (typeof data === "string") {
           errorMsg = data;
         } else if (data.detail) {
           errorMsg = data.detail;
         } else if (data.non_field_errors) {
-          errorMsg = data.non_field_errors.join(', ');
+          errorMsg = data.non_field_errors.join(", ");
         } else {
-          // Mostrar todos los errores de campos
           const errors = Object.entries(data)
             .map(([key, value]) => {
-              if (Array.isArray(value)) {
-                return `${key}: ${value.join(', ')}`;
-              } else if (typeof value === 'object') {
-                return `${key}: ${JSON.stringify(value)}`;
-              }
+              if (Array.isArray(value)) return `${key}: ${value.join(", ")}`;
+              if (typeof value === "object") return `${key}: ${JSON.stringify(value)}`;
               return `${key}: ${value}`;
             })
-            .join('\n');
+            .join("\n");
           errorMsg = errors || errorMsg;
         }
       }
-      
-      console.error('Error completo:', errorMsg);
+
       const err = new Error(errorMsg);
       err.detail = errorMsg;
       throw err;
@@ -138,10 +126,6 @@ export async function updateEstudiante(id, payload) {
   }
 }
 
-/**
- * Obtiene el historial de acciones recientes
- * @returns {Promise<Array>} Array de acciones
- */
 export async function getHistorialAcciones() {
   try {
     return await apiGet("/estudiantes/historial/");

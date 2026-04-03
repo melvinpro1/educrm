@@ -2,7 +2,7 @@
 
 import React from "react";
 import "./Siderbar.css";
-import logo from "../../recursos/imagenes/logo.jpg"; // ajusta si tu logo está en otra ruta
+import logo from "../../recursos/imagenes/logo.jpg";
 import { logout, getCurrentUser } from "../../api/auth";
 
 // Definimos las opciones con un id que usaremos en App.js
@@ -10,6 +10,7 @@ const opcionesMenu = [
   { id: "home", etiqueta: "Panel Principal" },
   { id: "estudiantes", etiqueta: "Estudiantes" },
   { id: "encargados", etiqueta: "Encargados" },
+  { id: "profesores", etiqueta: "Profesores" },
   { id: "comunicaciones", etiqueta: "Comunicaciones" },
 ];
 
@@ -33,6 +34,7 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {
     }
     return nombre.substring(0, 2).toUpperCase();
   };
+
   return (
     <aside className="sidebar">
       {/* Logo + título */}
@@ -58,7 +60,6 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {
                 (vistaActiva === opcion.id ? " sidebar-item-activo" : "")
               }
               onClick={() => {
-                // Solo cambiamos vista si existe el handler
                 if (onCambiarVista) onCambiarVista(opcion.id);
               }}
             >
@@ -87,7 +88,7 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {
         </div>
         <div className="sidebar-usuario-info">
           <p className="sidebar-usuario-nombre">
-            {usuario?.first_name && usuario?.last_name 
+            {usuario?.first_name && usuario?.last_name
               ? `${usuario.first_name} ${usuario.last_name}`
               : usuario?.username || "Usuario"}
           </p>

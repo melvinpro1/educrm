@@ -80,26 +80,34 @@
 }
 
 .comms-icono {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.comms-icono span {
   font-size: 18px;
-  color: #fff;
+  line-height: 1;
 }
 
 .comms-icono.azul {
-  background-color: #003ea5;
+  background-color: rgba(0, 62, 165, 0.08);
+  color: #003ea5;
 }
+
 .comms-icono.verde {
-  background-color: #7f8bbf;
+  background-color: rgba(127, 139, 191, 0.08);
+  color: #6b78b0;
 }
+
 .comms-icono.morado {
-  background-color: #ffc72d;
-  color: #2d2d2d;
+  background-color: rgba(255, 199, 45, 0.0.8);
+  color: #c28a00;
 }
+
 
 /* Historial */
 .comms-historial h2 {
@@ -122,13 +130,20 @@
 }
 
 .comms-item-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background-color: rgba(0, 62, 165, 0.1);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background-color: #d9ddf5 !important;
+  color: #6f78b8 !important;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.comms-item-icon span {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .comms-item-info h3 {

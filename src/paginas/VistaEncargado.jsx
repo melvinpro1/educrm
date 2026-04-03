@@ -14,6 +14,10 @@ function Encargados() {
   const [encargadoEditando, setEncargadoEditando] = useState(null);
   const [modalVerOpen, setModalVerOpen] = useState(false);
   const [encargadoViendo, setEncargadoViendo] = useState(null);
+  const [modalEliminarOpen, setModalEliminarOpen] = useState(false);
+  const [encargadoAEliminar, setEncargadoAEliminar] = useState(null);
+  const [modalMensajeOpen, setModalMensajeOpen] = useState(false);
+  const [mensajeModal, setMensajeModal] = useState("");
 
   // Cargar encargados desde el backend
   async function cargarEncargados() {
@@ -48,31 +52,43 @@ function Encargados() {
     setEncargadoEditando(null);
   };
 
-  // 🔹 Cancelar formulario
   const manejarCancelar = () => {
-    setModo("lista");
-    setEncargadoEditando(null);
-  };
+  setModo("lista");
+  setEncargadoEditando(null);
+};
 
-  async function handleDelete(id_encargado) {
-    const confirmacion = window.confirm(
-      "¿Seguro que deseas eliminar este encargado?"
-    );
-    if (!confirmacion) return;
+  // 🔹 Cancelar formulario
+ const manejarEliminar = (encargado) => {
+  setEncargadoAEliminar(encargado);
+  setModalEliminarOpen(true);
+};
 
-    const result = await deleteEncargado(id_encargado);
+const confirmarEliminar = async () => {
+  if (!encargadoAEliminar) return;
 
-    if (!result.ok) {
-      alert(result.error); // aquí sale "No se puede desactivar este encargado..." si tiene estudiantes activos
-      return;
-    }
+  const result = await deleteEncargado(encargadoAEliminar.id_encargado);
 
-    // Opción simple: recargar desde el backend
-    await cargarEncargados();
+ if (!result.ok) {
+  setModalEliminarOpen(false);
+  setMensajeModal(result.error || "Ocurrió un error al eliminar el encargado.");
+  setModalMensajeOpen(true);
+  return;
+}
 
-    // Alternativa: actualizar solo en memoria
-    // setEncargados(prev => prev.filter(e => e.id_encargado !== id_encargado));
-  }
+  await cargarEncargados();
+  setModalEliminarOpen(false);
+  setEncargadoAEliminar(null);
+};
+
+const cancelarEliminar = () => {
+  setModalEliminarOpen(false);
+  setEncargadoAEliminar(null);
+};
+
+const cerrarModalMensaje = () => {
+  setModalMensajeOpen(false);
+  setMensajeModal("");
+};
 
   async function handleEdit(enc) {
     setEncargadoEditando(enc);
@@ -153,7 +169,7 @@ function Encargados() {
           >
             <div className="tarjeta-contenido">
               <div className="tarjeta-header">
-                <div className="tarjeta-icono"><span className="bi bi-person-circle"></span></div>
+                <div className="tarjeta-icono"><span className="bi-person-circle"></span></div>
                 <div>
                   <h3>{e.nombre}</h3>
                 </div>
@@ -183,7 +199,7 @@ function Encargados() {
               </button>
               <button
                 className="btn-accion btn-eliminar"
-                onClick={() => handleDelete(e.id_encargado)}
+                onClick={() => manejarEliminar(e)}
                 title="Eliminar"
               >
                 <span className="bi bi-trash"></span>
@@ -205,7 +221,57 @@ function Encargados() {
       >
         {encargadoViendo && <DetalleEncargado encargado={encargadoViendo} />}
       </Modal>
-    </div>
+      <Modal
+        isOpen={modalEliminarOpen}
+        onClose={cancelarEliminar}
+        title="Confirmar eliminación"
+      >
+        <div style={{ padding: "8px 0" }}>
+          <p style={{ marginBottom: "16px", color: "#374151" }}>
+            ¿Seguro que deseas eliminar al encargado{" "}
+            <strong>{encargadoAEliminar?.nombre}</strong>?
+          </p>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+            <button
+              type="button"
+              className="btn-cancelar"
+              onClick={cancelarEliminar}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="btn-eliminar-modal"
+              onClick={confirmarEliminar}
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+          </Modal>
+            <Modal
+                isOpen={modalMensajeOpen}
+              onClose={cerrarModalMensaje}
+              title="Aviso"
+              size="small"
+            >
+              <div className="modal-mensaje-contenido">
+                <p className="modal-mensaje-texto">{mensajeModal}</p>
+
+                <div className="modal-mensaje-acciones">
+                  <button
+                    type="button"
+                    className="btn-aceptar-modal"
+                    onClick={cerrarModalMensaje}
+                  >
+                    Aceptar
+                  </button>
+                </div>
+              </div>
+         </Modal>
+      </div>
+    
   );
 }
 

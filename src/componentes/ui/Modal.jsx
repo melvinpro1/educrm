@@ -1,7 +1,7 @@
 import React from "react";
 import "./Modal.css";
 
-function Modal({ isOpen, onClose, children, title }) {
+function Modal({ isOpen, onClose, children, title,size = "default" }) {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
@@ -12,7 +12,7 @@ function Modal({ isOpen, onClose, children, title }) {
 
   return (
     <div className="modal-backdrop" onClick={handleBackdropClick}>
-      <div className="modal-contenido">
+      <div className={`modal-contenido modal-${size}`}>
         <div className="modal-header">
           <h2>{title}</h2>
           <button className="modal-close" onClick={onClose}>

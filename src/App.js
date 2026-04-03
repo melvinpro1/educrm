@@ -3,44 +3,39 @@ import Sidebar from "./componentes/siderbar/Siderbar.jsx";
 import Home from "./paginas/Home";
 import Login from "./paginas/Login";
 import Registro from "./paginas/Registro";
-import "./index.css"; // si aquí tienes estilos globales
+import "./index.css";
 import VistaEstudiante from "./paginas/VistaEstudiante.jsx";
 import VistaEncargados from "./paginas/VistaEncargado.jsx";
 import VistaComunicacion from "./paginas/VistaComunicacion.jsx";
+import VistaProfesores from "./paginas/VistaProfesores.jsx";
 import { isAuthenticated } from "./api/auth";
 
 function App() {
-  // Estado global simple para saber qué vista mostrar
-  const [vistaActiva, setVistaActiva] = useState("home"); // "home" | "estudiantes"
+  const [vistaActiva, setVistaActiva] = useState("home");
   const [autenticado, setAutenticado] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [mostrarRegistro, setMostrarRegistro] = useState(false);
 
-  // Verificar autenticación al cargar
   useEffect(() => {
     const estaAutenticado = isAuthenticated();
     setAutenticado(estaAutenticado);
     setCargando(false);
   }, []);
 
-  // Callback para cuando el usuario inicia sesión exitosamente
   const handleLoginExitoso = () => {
     setAutenticado(true);
   };
 
-  // Callback para cuando el usuario se registra exitosamente
   const handleRegistroExitoso = () => {
     setAutenticado(true);
     setMostrarRegistro(false);
   };
 
-  // Callback para cuando el usuario cierra sesión
   const handleLogout = () => {
     setAutenticado(false);
     setVistaActiva("home");
   };
 
-  // Callback para cambiar entre login y registro
   const handleMostrarRegistro = () => {
     setMostrarRegistro(true);
   };
@@ -49,57 +44,58 @@ function App() {
     setMostrarRegistro(false);
   };
 
-  // Mostrar pantalla de carga mientras verifica autenticación
   if (cargando) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px',
-        color: '#6b7280'
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+          color: "#6b7280",
+        }}
+      >
         Cargando...
       </div>
     );
   }
 
-  // Si no está autenticado, mostrar login o registro
   if (!autenticado) {
     if (mostrarRegistro) {
       return (
-        <Registro 
+        <Registro
           onRegistroExitoso={handleRegistroExitoso}
           onVolverLogin={handleMostrarLogin}
         />
       );
     }
     return (
-      <Login 
+      <Login
         onLoginExitoso={handleLoginExitoso}
         onMostrarRegistro={handleMostrarRegistro}
       />
     );
   }
 
-  // Decide qué componente mostrar según lo que venga del Sidebar
   const renderContenido = () => {
     switch (vistaActiva) {
       case "home":
         return <Home />;
       case "estudiantes":
-        return <VistaEstudiante/>;
+        return <VistaEstudiante />;
       case "encargados":
-        return <VistaEncargados/>;
+        return <VistaEncargados />;
       case "comunicaciones":
-        return <VistaComunicacion/>;  
+        return <VistaComunicacion />;
+      case "profesores":
+        return <VistaProfesores />;
       default:
-        return <Home />; // por si acaso
+        return <Home />;
     }
   };
 
-   return (
+  return (
     <div className="layout-principal">
       <Sidebar
         vistaActiva={vistaActiva}

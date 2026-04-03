@@ -1,4 +1,4 @@
-// 📁 src/paginas/Comunicaciones.jsx
+//src/paginas/Comunicaciones.jsx
 // Vista principal del Sistema de Comunicaciones.
 // Muestra estadísticas y un historial de comunicaciones registradas.
 
@@ -362,7 +362,7 @@ const handleDrop = (e) => {
         <div className="comms-card">
           <p className="comms-card-titulo">Total Comunicaciones</p>
           <div className="comms-card-body">
-            <div className="comms-icono azul"><span className="bi bi-envelope-plus"></span></div>
+            <div className="comms-icono azul"><span className="bi bi-envelope"></span></div>
             <div>
               <h2>{totalComunicaciones}</h2>
               <span>Registradas</span>
@@ -373,7 +373,7 @@ const handleDrop = (e) => {
         <div className="comms-card">
           <p className="comms-card-titulo">Correos Enviados</p>
           <div className="comms-card-body">
-            <div className="comms-icono verde"><span className="bi bi-envelope-check"></span></div>
+            <div className="comms-icono verde"><span className="bi bi-send"></span></div>
             <div>
               <h2>{totalEnviados}</h2>
               <span>Total</span>
@@ -384,7 +384,7 @@ const handleDrop = (e) => {
         <div className="comms-card">
           <p className="comms-card-titulo">Última Comunicación</p>
           <div className="comms-card-body">
-            <div className="comms-icono morado"><span className="bi bi-clock-history"></span></div>
+            <div className="comms-icono morado"><span className="bi bi-clock"></span></div>
             <div>
               <h3>{ultima ? ultima.asunto : "Sin registros"}</h3>
               <span>

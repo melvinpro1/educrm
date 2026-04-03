@@ -17,11 +17,14 @@ function Estudiantes() {
   const [filtroNivel, setFiltroNivel] = useState("Todos");
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [estudianteEditando, setEstudianteEditando] = useState(null); // 🔹 Nuevo estado
-  const [modalVerOpen, setModalVerOpen] = useState(false); // 🔹 Estado para modal de ver
-  const [estudianteViendo, setEstudianteViendo] = useState(null); // 🔹 Estudiante a visualizar
+  const [estudianteEditando, setEstudianteEditando] = useState(null); // Nuevo esta
+  const [estudianteViendo, setEstudianteViendo] = useState(null); //  Estudiante a visualizar
+  const [modalEliminarOpen, setModalEliminarOpen] = useState(false);
+  const [estudianteAEliminar, setEstudianteAEliminar] = useState(null);
+  const [modalVerOpen, setModalVerOpen] = useState(false);
+  
 
-  // 🔹 Cargar estudiantes desde el backend
+  //Cargar estudiantes desde el back
   async function cargarEstudiantes() {
     setLoading(true);
     try {
@@ -105,23 +108,31 @@ function Estudiantes() {
     setEstudianteEditando(null); // 🔹 Limpiar estudiante en edición
   };
 
-  // 🔹 Eliminar estudiante (DELETE real)
-  const manejarEliminar = async (id_estudiante) => {
-    const confirmacion = window.confirm(
-      "¿Seguro que deseas eliminar este estudiante?"
-    );
-    if (!confirmacion) return;
+  //  Eliminar estudiante (DELETE real)
+ const manejarEliminar = (estudiante) => {
+  setEstudianteAEliminar(estudiante);
+  setModalEliminarOpen(true);
+};
 
-    const result = await deleteEstudiante(id_estudiante);
+const confirmarEliminar = async () => {
+  if (!estudianteAEliminar) return;
 
-    if (!result.ok) {
-      alert(result.error);
-      return;
-    }
+  const result = await deleteEstudiante(estudianteAEliminar.id_estudiante);
 
-    await cargarEstudiantes();
-  };
+  if (!result.ok) {
+    alert(result.error);
+    return;
+  }
 
+  await cargarEstudiantes();
+  setModalEliminarOpen(false);
+  setEstudianteAEliminar(null);
+};
+
+const cancelarEliminar = () => {
+  setModalEliminarOpen(false);
+  setEstudianteAEliminar(null);
+};
   // 🔹 Editar estudiante - ahora usa el formulario completo
   const manejarEditar = (est) => {
     setEstudianteEditando(est);
@@ -263,7 +274,7 @@ function Estudiantes() {
               </button>
               <button
                 className="btn-accion btn-eliminar"
-                onClick={() => manejarEliminar(e.id_estudiante)}
+                onClick={() => manejarEliminar(e)}
                 title="Eliminar"
               >
                 <span className="bi bi-trash"></span>
@@ -285,6 +296,36 @@ function Estudiantes() {
       >
         {estudianteViendo && <DetalleEstudiante estudiante={estudianteViendo} />}
       </Modal>
+      <Modal
+        isOpen={modalEliminarOpen}
+        onClose={cancelarEliminar}
+        title="Confirmar eliminación"
+        size="wide"
+>
+    <div className="modal-confirmacion-contenido">
+      <p className="modal-confirmacion-texto">
+        ¿Seguro que deseas eliminar al estudiante{" "}
+        <strong>{estudianteAEliminar?.nombre}</strong>?
+      </p>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+        <button
+          type="button"
+          className="btn-cancelar"
+          onClick={cancelarEliminar}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="btn-eliminar-modal"
+          onClick={confirmarEliminar}
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </Modal>
     </div>
   );
 }
