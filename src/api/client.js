@@ -13,7 +13,7 @@ export async function apiGet(path, { params } = {}) {
   const res = await fetch(url);
 
   if (!res.ok) {
-    throw new Error(`Error GET ${url}: ${res.status}`);
+    throw new Error(`Error al obtener datos: ${res.status}`);
   }
 
   return res.json();
@@ -37,7 +37,7 @@ export async function apiDelete(path) {
   
 
   if (!res.ok) {
-    const detail = data?.detail || `Error DELETE ${path}: ${res.status}`;
+    const detail = data?.detail || `Error al eliminar: ${res.status}`;
     const err = new Error(detail);
     err.detail = detail;
     throw err;
@@ -63,7 +63,7 @@ export async function apiPatch(path, body) {
   }
 
   if (!res.ok) {
-    const detail = data?.detail || `Error PATCH ${path}: ${res.status}`;
+    const detail = data?.detail || `Error al actualizar: ${res.status}`;
     const err = new Error(detail);
     err.detail = detail;
     throw err;

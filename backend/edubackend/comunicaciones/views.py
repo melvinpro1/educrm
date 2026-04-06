@@ -184,7 +184,7 @@ class EnviarCorreoView(APIView):
 
         # ========== ESTUDIANTES ==========
         if segmento in ["estudiantes", "todos"] and estudiantes_ids:
-            qs_est = Estudiante.objects.filter(pk__in=estudiantes_ids)
+            qs_est = Estudiante.objects.filter(pk__in=estudiantes_ids, activo=True)
 
             if tipo_email == "institucional":
                 correos_est = list(
@@ -211,7 +211,7 @@ class EnviarCorreoView(APIView):
 
         # ========== ENCARGADOS ==========
         if segmento in ["encargados", "todos"]:
-            qs_enc = Encargado.objects.all()
+            qs_enc = Encargado.objects.filter(activo=True)
             correos_enc = list(qs_enc.values_list("correo", flat=True))
             correos += correos_enc
 
@@ -241,6 +241,9 @@ class EnviarCorreoView(APIView):
             email.attach_file(adjunto.archivo.path)
 
         email.send(fail_silently=False)
+
+        correo_obj.total_enviados = len(correos)
+        correo_obj.save()
 
         return Response(
             CorreoSerializer(correo_obj).data,

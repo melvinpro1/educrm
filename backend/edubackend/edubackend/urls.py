@@ -24,8 +24,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
-router.register(r'encargados', EncargadoViewSet)
-router.register(r'estudiantes', EstudianteViewSet)
+router.register(r'encargados', EncargadoViewSet, basename='encargados')
+router.register(r'estudiantes', EstudianteViewSet, basename='estudiantes')
 router.register(r'profesores', ProfesorViewSet, basename='profesores')
 
 urlpatterns = [

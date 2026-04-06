@@ -2,8 +2,8 @@ import { apiGet, apiDelete } from "./client";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
 
-export async function getEstudiantes() {
-  return apiGet("/estudiantes/");
+export async function getEstudiantes(estado = "activos") {
+  return apiGet(`/estudiantes/?estado=${estado}`);
 }
 
 export async function verificarCedulaExistente(cedula, excludeId = null) {

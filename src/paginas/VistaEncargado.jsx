@@ -9,6 +9,7 @@ import { getEncargados, deleteEncargado, updateEncargado } from "../api/encargad
 function Encargados() {
   const [modo, setModo] = useState("lista"); // "lista" | "editar"
   const [busqueda, setBusqueda] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("activos");
   const [encargados, setEncargados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [encargadoEditando, setEncargadoEditando] = useState(null);
@@ -22,16 +23,15 @@ function Encargados() {
   // Cargar encargados desde el backend
   async function cargarEncargados() {
     setLoading(true);
-    const data = await getEncargados(busqueda);
+    const data = await getEncargados(filtroEstado);
     setEncargados(data);
     setLoading(false);
   }
 
-  // Cargar al inicio
   useEffect(() => {
     cargarEncargados();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [filtroEstado]);
 
   // Filtrar por nombre en el front (además del search del back, si quieres)
   const encargadosFiltrados = encargados.filter((e) =>
@@ -150,7 +150,7 @@ const cerrarModalMensaje = () => {
         </div>
       </div>
 
-      {/* Buscador */}
+      {/* Buscador + filtros */}
       <div className="estudiantes-filtros">
         <input
           type="text"
@@ -158,6 +158,22 @@ const cerrarModalMensaje = () => {
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
+
+        <div className="filtro-niveles">
+          {[
+            { label: "Activos", value: "activos" },
+            { label: "Inactivos", value: "inactivos" },
+            { label: "Todos", value: "todos" },
+          ].map((filtro) => (
+            <button
+              key={filtro.value}
+              className={filtroEstado === filtro.value ? "activo" : ""}
+              onClick={() => setFiltroEstado(filtro.value)}
+            >
+              {filtro.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tarjetas de encargados (usa el mismo CSS de estudiantes) */}

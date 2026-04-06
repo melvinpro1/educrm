@@ -8,6 +8,7 @@ class Encargado(models.Model):
     nombre = models.CharField(max_length=150)
     correo = models.EmailField(max_length=150, unique=True)
     telefono = models.CharField(max_length=20)
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nombre
@@ -23,6 +24,8 @@ class Estudiante(models.Model):
     colegio_procedencia = models.CharField(max_length=200, blank=True, null=True)
     grado = models.CharField(max_length=50)
     direccion_domicilio = models.CharField(max_length=255, blank=True, null=True)
+
+    activo = models.BooleanField(default=True)
 
     # FK a Encargado
     id_encargado = models.ForeignKey(

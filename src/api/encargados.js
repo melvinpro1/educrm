@@ -2,11 +2,8 @@ import { apiGet, apiDelete, apiPatch } from "./client";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
 
-export async function getEncargados(search) {
-  if (search && search.trim() !== "") {
-    return apiGet("/encargados/", { params: { search } });
-  }
-  return apiGet("/encargados/");
+export async function getEncargados(estado = "activos") {
+  return apiGet(`/encargados/?estado=${estado}`);
 }
 
 export async function createEncargado(data) {

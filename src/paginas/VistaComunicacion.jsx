@@ -6,6 +6,8 @@ import React, { useState, useEffect, useRef } from "react";
 import "../recursos/estilos/VistaComunicacion.css";
 
 // NUEVO: Función para crear FormData con archivos
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+
 function crearFormData(datos, archivos) {
   const formData = new FormData();
   
@@ -68,7 +70,7 @@ function Comunicaciones() {
   useEffect(() => {
     const fetchComunicaciones = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/comunicaciones/correos/", {
+        const res = await fetch(`${API_BASE}/comunicaciones/correos/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -97,7 +99,7 @@ function Comunicaciones() {
   useEffect(() => {
     const fetchEstudiantes = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/estudiantes/", {
+        const res = await fetch(`${API_BASE}/estudiantes/?estado=activos`, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -127,35 +129,30 @@ function Comunicaciones() {
   //   SEGMENTACIÓN → IDs
   // =========================
   const actualizarEstudiantesSeleccionados = (config, listaEstudiantes) => {
-    // Si no es segmento "estudiantes", no seleccionamos nada
-    if (config.segmento !== "estudiantes") {
+    // Solo encargados: no necesitamos IDs de estudiantes
+    if (config.segmento === "encargados") {
       setEstudiantesSeleccionados([]);
       return;
     }
 
+    // Para "estudiantes" y "todos" seleccionamos estudiantes activos
     let filtrados = [...listaEstudiantes];
 
-    // FILTRO POR GRADO según lo que tienes en BD: "Cuarto Nivel" / "Quinto Nivel"
-    if (config.gradoEstudiante === "cuartos") {
-      filtrados = filtrados.filter((est) => {
-        if (!est.grado) return false;
-        const g = est.grado.toString().toLowerCase();
-        return g.includes("cuarto"); // "cuarto nivel"
-      });
-    } else if (config.gradoEstudiante === "quintos") {
-      filtrados = filtrados.filter((est) => {
-        if (!est.grado) return false;
-        const g = est.grado.toString().toLowerCase();
-        return g.includes("quinto"); // "quinto nivel"
-      });
+    // Filtro por grado solo aplica cuando el segmento es "estudiantes"
+    if (config.segmento === "estudiantes") {
+      if (config.gradoEstudiante === "cuartos") {
+        filtrados = filtrados.filter((est) =>
+          est.grado?.toLowerCase().includes("cuarto")
+        );
+      } else if (config.gradoEstudiante === "quintos") {
+        filtrados = filtrados.filter((est) =>
+          est.grado?.toLowerCase().includes("quinto")
+        );
+      }
     }
-    // si es "todos", no filtramos por grado
 
     const ids = filtrados.map((est) => est.id_estudiante);
-
     setEstudiantesSeleccionados(ids);
-    console.log("Estudiantes filtrados:", filtrados);
-    console.log("IDs seleccionados:", ids);
   };
 
   // Recalcular selección SIEMPRE que cambien estudiantes o segmentación
@@ -313,7 +310,7 @@ const handleDrop = (e) => {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/api/comunicaciones/correos/enviar/", {
+      const res = await fetch(`${API_BASE}/comunicaciones/correos/enviar/`, {
         method: "POST",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -616,12 +613,15 @@ const handleDrop = (e) => {
 
                 <div className="comms-meta">
                   <span>
-                    <span className="bi bi-calendar3"></span> {" "}
+                    <span className="bi bi-calendar3"></span>{" "}
                     {com.fecha
                       ? new Date(com.fecha).toLocaleString("es-CR")
                       : "Sin fecha"}
                   </span>
-                  <span className="bi bi-envelope-check"> {com.enviados || 0} enviados</span>
+                  <span>
+                    <span className="bi bi-envelope-check"></span>{" "}
+                    {com.enviados || 0} correos enviados
+                  </span>
                 </div>
               </div>
             </div>
@@ -630,15 +630,37 @@ const handleDrop = (e) => {
               <p className="comms-label">Mensaje:</p>
               <p className="comms-mensaje">{com.mensaje}</p>
 
-              <p className="comms-label">
-                Destinatarios ({(com.estudiantes_ids || []).length}):
-              </p>
+              <p className="comms-label">Destinatarios:</p>
               <div className="comms-destinatarios">
-                {(com.estudiantes_ids || []).map((idEst, i) => (
-                  <span key={i} className="chip">
-                    ID Estudiante: {idEst}
+                {com.segmento === "estudiantes" && (
+                  <span className="chip">
+                    <span className="bi bi-mortarboard-fill"></span>{" "}
+                    {(com.estudiantes_ids || []).length} estudiante(s)
                   </span>
-                ))}
+                )}
+                {com.segmento === "encargados" && (
+                  <span className="chip">
+                    <span className="bi bi-people-fill"></span>{" "}
+                    Encargados activos
+                  </span>
+                )}
+                {com.segmento === "todos" && (
+                  <>
+                    <span className="chip">
+                      <span className="bi bi-mortarboard-fill"></span>{" "}
+                      {(com.estudiantes_ids || []).length} estudiante(s)
+                    </span>
+                    <span className="chip">
+                      <span className="bi bi-people-fill"></span>{" "}
+                      Encargados activos
+                    </span>
+                  </>
+                )}
+                {!com.segmento && (
+                  <span className="chip">
+                    {(com.estudiantes_ids || []).length} destinatario(s)
+                  </span>
+                )}
               </div>
 
               {com.adjuntos && com.adjuntos.length > 0 && (

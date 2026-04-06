@@ -9,6 +9,8 @@ class Correo(models.Model):
     contenido = models.TextField()  # NVARCHAR(MAX)
     fecha_envio = models.DateTimeField(default=timezone.now)
     tipo_correo = models.CharField(max_length=50, null=True, blank=True)
+    segmento = models.CharField(max_length=20, null=True, blank=True)
+    total_enviados = models.IntegerField(default=0)
 
     # FK al usuario (profesor/director/administrativo)
     id_usuario = models.ForeignKey(

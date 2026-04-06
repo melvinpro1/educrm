@@ -22,42 +22,48 @@ def registrar_accion(usuario, tipo_accion, descripcion, detalles=''):
 
 
 class EncargadoViewSet(viewsets.ModelViewSet):
-    queryset = Encargado.objects.all()
     serializer_class = EncargadoSerializer
 
+    def get_queryset(self):
+        estado = self.request.query_params.get('estado', 'activos')
+        if estado == 'inactivos':
+            return Encargado.objects.filter(activo=False).order_by('nombre')
+        elif estado == 'todos':
+            return Encargado.objects.all().order_by('nombre')
+        else:
+            return Encargado.objects.filter(activo=True).order_by('nombre')
+
     def destroy(self, request, *args, **kwargs):
-        """
-        Hard delete del encargado SOLO si no tiene estudiantes activos.
-        """
-        instance: Encargado = self.get_object()
+        """Soft delete del encargado."""
+        instance: Encargado = Encargado.objects.get(pk=kwargs['pk'])
 
-        # Verificar si tiene estudiantes asociados
-        tiene_estudiantes = instance.estudiantes.exists()
+        instance.activo = False
+        instance.save()
 
-        if tiene_estudiantes:
-            return Response(
-                {
-                    "detail": "No se puede eliminar este encargado porque aún tiene estudiantes asociados."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Registrar acción
         registrar_accion(
             usuario='Sistema',
             tipo_accion='eliminar_encargado',
-            descripcion=f'Eliminó encargado: {instance.nombre}',
+            descripcion=f'Inactivó encargado: {instance.nombre}',
             detalles=f'Correo: {instance.correo}'
         )
-        
-        # Hard delete
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {'mensaje': 'Encargado inactivado correctamente.'},
+            status=status.HTTP_200_OK
+        )
 
 
 class EstudianteViewSet(viewsets.ModelViewSet):
-    queryset = Estudiante.objects.all()
     serializer_class = EstudianteSerializer
+
+    def get_queryset(self):
+        estado = self.request.query_params.get('estado', 'activos')
+        if estado == 'inactivos':
+            return Estudiante.objects.filter(activo=False).order_by('nombre')
+        elif estado == 'todos':
+            return Estudiante.objects.all().order_by('nombre')
+        else:
+            return Estudiante.objects.filter(activo=True).order_by('nombre')
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -72,6 +78,7 @@ class EstudianteViewSet(viewsets.ModelViewSet):
         return response
 
     def update(self, request, *args, **kwargs):
+        instance = Estudiante.objects.get(pk=kwargs['pk'])
         response = super().update(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
             nombre_estudiante = response.data.get('nombre', 'Desconocido')
@@ -81,33 +88,41 @@ class EstudianteViewSet(viewsets.ModelViewSet):
                 descripcion=f'Editó estudiante: {nombre_estudiante}',
                 detalles=f'Cédula: {response.data.get("cedula", "N/A")}'
             )
+            # Si se reactivó el estudiante, reactivar también al encargado
+            if response.data.get('activo') is True:
+                encargado = instance.id_encargado
+                if encargado and not encargado.activo:
+                    encargado.activo = True
+                    encargado.save()
         return response
 
     def destroy(self, request, *args, **kwargs):
         """
-        Hard delete del estudiante.
-        Si el encargado no tiene más estudiantes, también se elimina.
+        Soft delete del estudiante.
+        Si todos los estudiantes del encargado quedan inactivos, también se inactiva el encargado.
         """
-        instance: Estudiante = self.get_object()
-        encargado = instance.id_encargado
-        
-        # Registrar acción antes de eliminar
+        instance: Estudiante = Estudiante.objects.get(pk=kwargs['pk'])
+
+        instance.activo = False
+        instance.save()
+
         registrar_accion(
             usuario='Sistema',
             tipo_accion='eliminar_estudiante',
-            descripcion=f'Eliminó estudiante: {instance.nombre}',
+            descripcion=f'Inactivó estudiante: {instance.nombre}',
             detalles=f'Cédula: {instance.cedula}, Grado: {instance.grado}'
         )
 
-        # Eliminar estudiante (hard delete)
-        instance.delete()
+        # Si todos los estudiantes del encargado están inactivos, inactivar encargado también
+        encargado = instance.id_encargado
+        if encargado and not encargado.estudiantes.filter(activo=True).exists():
+            encargado.activo = False
+            encargado.save()
 
-        # Revisar si ese encargado tiene otros estudiantes
-        if encargado and not encargado.estudiantes.exists():
-            # Si no tiene más estudiantes, eliminamos también al encargado
-            encargado.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'mensaje': 'Estudiante inactivado correctamente.'},
+            status=status.HTTP_200_OK
+        )
 
     @action(detail=False, methods=['get'], url_path='dashboard-stats')
     def dashboard_stats(self, request):

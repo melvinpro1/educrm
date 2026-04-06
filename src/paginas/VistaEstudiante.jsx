@@ -15,6 +15,7 @@ function Estudiantes() {
   const [modo, setModo] = useState("lista"); // "lista" | "nuevo" | "editar"
   const [busqueda, setBusqueda] = useState("");
   const [filtroNivel, setFiltroNivel] = useState("Todos");
+  const [filtroEstado, setFiltroEstado] = useState("activos");
   const [estudiantes, setEstudiantes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [estudianteEditando, setEstudianteEditando] = useState(null); // Nuevo esta
@@ -28,7 +29,7 @@ function Estudiantes() {
   async function cargarEstudiantes() {
     setLoading(true);
     try {
-      const data = await getEstudiantes();
+      const data = await getEstudiantes(filtroEstado);
       setEstudiantes(data);
     } catch (err) {
       console.error("Error cargando estudiantes:", err);
@@ -40,7 +41,8 @@ function Estudiantes() {
 
   useEffect(() => {
     cargarEstudiantes();
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtroEstado]);
 
   // 🔹 Filtra por nivel (usando 'grado' que viene del backend)
   const filtrarPorNivel = (lista) => {
@@ -206,20 +208,38 @@ const cancelarEliminar = () => {
           onChange={(e) => setBusqueda(e.target.value)}
         />
 
-        <div className="filtro-niveles">
-          {["Todos", "Cuarto Nivel", "Quinto Nivel"].map((nivel) => (
-            <button
-              key={nivel}
-              className={filtroNivel === nivel ? "activo" : ""}
-              onClick={() => setFiltroNivel(nivel)}
-            >
-              {nivel === "Todos"
-                ? "Todos"
-                : nivel === "Cuarto Nivel"
-                ? "Cuarto"
-                : "Quinto"}
-            </button>
-          ))}
+        <div className="filtro-grupo">
+          <span className="filtro-etiqueta">Estado</span>
+          <div className="filtro-niveles">
+            {[
+              { label: "Activos", value: "activos" },
+              { label: "Inactivos", value: "inactivos" },
+              { label: "Todos", value: "todos" },
+            ].map((filtro) => (
+              <button
+                key={filtro.value}
+                className={filtroEstado === filtro.value ? "activo" : ""}
+                onClick={() => setFiltroEstado(filtro.value)}
+              >
+                {filtro.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="filtro-grupo">
+          <span className="filtro-etiqueta">Nivel</span>
+          <div className="filtro-niveles">
+            {["Cuarto Nivel", "Quinto Nivel", "Todos"].map((nivel) => (
+              <button
+                key={nivel}
+                className={filtroNivel === nivel ? "activo" : ""}
+                onClick={() => setFiltroNivel(nivel)}
+              >
+                {nivel === "Todos" ? "Todos" : nivel === "Cuarto Nivel" ? "Cuarto" : "Quinto"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -246,7 +266,7 @@ const cancelarEliminar = () => {
                   {e.grado}
                 </span>
                 <span className="estado">
-                  {e.estado ? "activo" : "inactivo"}
+                  {e.activo ? "activo" : "inactivo"}
                 </span>
 
                 <p><span className="bi bi-envelope-fill"></span> {e.correo_institucional}</p>

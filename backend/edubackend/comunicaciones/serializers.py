@@ -50,9 +50,9 @@ class EnviarCorreoSerializer(serializers.Serializer):
         estudiantes_ids = validated_data.pop("estudiantes_ids", [])
         adjuntos_files = validated_data.pop("adjuntos", [])
 
-        # estos campos NO existen en el modelo Correo, son solo para la vista
+        # tipo_email_estudiante no existe en el modelo, se quita
         validated_data.pop("tipo_email_estudiante", None)
-        validated_data.pop("segmento", None)
+        # segmento SÍ se guarda en el modelo (no se hace pop)
 
         request = self.context.get("request")
         if request and request.user.is_authenticated:
@@ -101,6 +101,7 @@ class CorreoSerializer(serializers.ModelSerializer):
             "mensaje",
             "fecha",
             "tipo_correo",
+            "segmento",
             "estudiantes_ids",
             "adjuntos",
             "estado",
@@ -108,8 +109,7 @@ class CorreoSerializer(serializers.ModelSerializer):
         ]
 
     def get_estado(self, obj):
-        # por ahora todo lo que está en BD lo marcamos como "enviado"
         return "enviado"
 
     def get_enviados(self, obj):
-        return obj.estudiantes.count()
+        return obj.total_enviados

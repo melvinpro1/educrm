@@ -1,5 +1,19 @@
 import { apiGet, apiDelete } from "./client";
 
+export async function verificarCedulaProfesorExistente(cedula, excludeId = null) {
+  try {
+    const profesores = await apiGet("/profesores/");
+    const cedulaSinFormato = cedula.replace(/\D/g, "");
+    return profesores.some((p) => {
+      const cedulaProfesor = p.cedula ? p.cedula.replace(/\D/g, "") : "";
+      return cedulaProfesor === cedulaSinFormato && p.id_profesor !== excludeId;
+    });
+  } catch (error) {
+    console.error("Error verificando cédula:", error);
+    return false;
+  }
+}
+
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
 
 export async function obtenerProfesores(estado = "activos") {
@@ -16,9 +30,10 @@ export async function eliminarProfesor(id) {
     await apiDelete(`/profesores/${id}/`);
     return { ok: true };
   } catch (err) {
+    const msg = err.detail || err.message || "";
     return {
       ok: false,
-      error: err.detail || err.message || "Error al eliminar profesor.",
+      error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al eliminar profesor.",
     };
   }
 }
@@ -70,9 +85,10 @@ export async function crearProfesor(formData) {
 
     return { ok: true, data };
   } catch (err) {
+    const msg = err.detail || err.message || "";
     return {
       ok: false,
-      error: err.detail || err.message || "Error al crear profesor.",
+      error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al crear profesor.",
     };
   }
 }
@@ -96,9 +112,10 @@ export async function actualizarProfesor(id, payload) {
 
     return { ok: true, data };
   } catch (err) {
+    const msg = err.detail || err.message || "";
     return {
       ok: false,
-      error: err.detail || err.message || "Error al actualizar profesor.",
+      error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al actualizar profesor.",
     };
   }
 }

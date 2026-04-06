@@ -177,7 +177,7 @@ import re
 class EncargadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Encargado
-        fields = ['id_encargado', 'nombre', 'correo', 'telefono']
+        fields = ['id_encargado', 'nombre', 'correo', 'telefono', 'activo']
         extra_kwargs = {
             # quitamos el validador de unique aquí para que no moleste en el anidado
             'correo': {'validators': []},
@@ -219,6 +219,7 @@ class EstudianteSerializer(serializers.ModelSerializer):
             'colegio_procedencia',
             'grado',
             'direccion_domicilio',
+            'activo',
             'encargado',
         ]
 
@@ -282,14 +283,21 @@ class EstudianteSerializer(serializers.ModelSerializer):
 
         if encargado_data:
             correo = encargado_data.get('correo')
-            # aquí SÍ queremos reusar por correo
             encargado, creado = Encargado.objects.get_or_create(
                 correo=correo,
                 defaults={
                     'nombre': encargado_data.get('nombre', ''),
                     'telefono': encargado_data.get('telefono', ''),
+                    'activo': True,
                 }
             )
+
+            if not creado:
+                # El correo ya existía: actualizar con los datos nuevos que ingresó el usuario
+                encargado.nombre = encargado_data.get('nombre', encargado.nombre)
+                encargado.telefono = encargado_data.get('telefono', encargado.telefono)
+                encargado.activo = True
+                encargado.save()
 
         estudiante = Estudiante.objects.create(
             id_encargado=encargado,

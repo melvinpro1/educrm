@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
 import FormularioProfesor from "./FormularioProfesor";
 import Modal from "../componentes/ui/Modal";
+import DetalleProfesor from "../componentes/ui/DetalleProfesor";
 import {
   obtenerProfesores,
   eliminarProfesor,
@@ -18,6 +19,8 @@ function VistaProfesores() {
   const [profesorEditando, setProfesorEditando] = useState(null);
   const [modalEliminarOpen, setModalEliminarOpen] = useState(false);
   const [profesorAEliminar, setProfesorAEliminar] = useState(null);
+  const [profesorViendo, setProfesorViendo] = useState(null);
+  const [modalVerOpen, setModalVerOpen] = useState(false);
 
   async function cargarProfesores() {
     setLoading(true);
@@ -129,6 +132,16 @@ function VistaProfesores() {
     setModo("editar");
   };
 
+  const manejarVer = (profesor) => {
+    setProfesorViendo(profesor);
+    setModalVerOpen(true);
+  };
+
+  const cerrarModalVer = () => {
+    setModalVerOpen(false);
+    setProfesorViendo(null);
+  };
+
   if (modo === "nuevo" || modo === "editar") {
     return (
       <div className="estudiantes">
@@ -230,6 +243,13 @@ function VistaProfesores() {
 
             <div className="tarjeta-acciones-vertical">
               <button
+                className="btn-accion btn-ver"
+                onClick={() => manejarVer(p)}
+                title="Ver detalles"
+              >
+                <span className="bi bi-eye"></span>
+              </button>
+              <button
                 className="btn-accion btn-editar"
                 onClick={() => manejarEditar(p)}
                 title="Editar"
@@ -251,6 +271,14 @@ function VistaProfesores() {
           <p>No se encontraron profesores.</p>
         )}
       </div>
+
+      <Modal
+        isOpen={modalVerOpen}
+        onClose={cerrarModalVer}
+        title={profesorViendo ? profesorViendo.nombre : "Detalles del Profesor"}
+      >
+        {profesorViendo && <DetalleProfesor profesor={profesorViendo} />}
+      </Modal>
 
       <Modal
         isOpen={modalEliminarOpen}
