@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.db.models import Count, Q
+from django.db import transaction
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -176,5 +177,102 @@ class EstudianteViewSet(viewsets.ModelViewSet):
         acciones = HistorialAccion.objects.all()[:20]
         serializer = HistorialAccionSerializer(acciones, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='upload-bulk')
+    def upload_bulk(self, request):
+        """
+        Recibe una lista de estudiantes (en JSON) y los crea o actualiza.
+        Plus: Maneja transacciones y devuelve resumen de errores por fila.
+        """
+        data = request.data
+        if not isinstance(data, list):
+            return Response({"error": "Se esperaba una lista de objetos estudiante."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        created_count = 0
+        updated_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for index, item in enumerate(data):
+                try:
+                    # 1. Extraer datos anidados del encargado
+                    encargado_data = item.pop('encargado', None)
+                    cedula = str(item.get('cedula', '')).strip()
+
+                    if not cedula:
+                        errors.append(f"Fila {index + 1}: La cédula es requerida.")
+                        continue
+
+                    # 2. Manejar el Encargado por correo (reutilizar o crear)
+                    encargado = None
+                    if encargado_data and encargado_data.get('correo'):
+                        correo_enc = encargado_data.get('correo').strip()
+                        nombre_enc = encargado_data.get('nombre', '').strip()
+                        tel_enc = str(encargado_data.get('telefono', '')).strip()
+
+                        encargado, creado_enc = Encargado.objects.get_or_create(
+                            correo=correo_enc,
+                            defaults={
+                                'nombre': nombre_enc,
+                                'telefono': tel_enc,
+                                'activo': True
+                            }
+                        )
+                        # Si ya existía, actualizamos sus datos (Plus: Sobrescribir)
+                        if not creado_enc:
+                            if nombre_enc: encargado.nombre = nombre_enc
+                            if tel_enc: encargado.telefono = tel_enc
+                            encargado.activo = True
+                            encargado.save()
+                    
+                    # 3. Manejar el Estudiante (Crear o Actualizar)
+                    estudiante = Estudiante.objects.filter(cedula=cedula).first()
+                    
+                    if estudiante:
+                        # ACTUALIZAR (Overwrite)
+                        for attr, value in item.items():
+                            if value is not None:
+                                setattr(estudiante, attr, value)
+                        
+                        if encargado:
+                            estudiante.id_encargado = encargado
+                        
+                        estudiante.activo = True # Reactivar si estaba inactivo
+                        estudiante.save()
+                        updated_count += 1
+                    else:
+                        # CREAR NUEVO
+                        if not encargado:
+                            errors.append(f"Fila {index + 1}: Estudiante nuevo requiere un encargado con correo.")
+                            continue
+                        
+                        # Limpiar campos para asegurar que no enviamos IDs manuales
+                        item.pop('id_estudiante', None)
+                        
+                        Estudiante.objects.create(
+                            id_encargado=encargado,
+                            **item
+                        )
+                        created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Fila {index + 1}: Error ({cedula}): {str(e)}")
+        
+        # Registrar en el historial
+        registrar_accion(
+            usuario=str(request.user) if request.user.is_authenticated else "Sistema",
+            tipo_accion='crear_estudiante',
+            descripcion=f"Importación masiva. Creados: {created_count}, Actualizados: {updated_count}",
+            detalles=f"Errores encontrados: {len(errors)}"
+        )
+
+        return Response({
+            "success": True,
+            "creados": created_count,
+            "actualizados": updated_count,
+            "errores": errors,
+            "total_procesados": created_count + updated_count
+        }, status=status.HTTP_200_OK if not errors else status.HTTP_207_MULTI_STATUS)
+
 
 # Create your views here.

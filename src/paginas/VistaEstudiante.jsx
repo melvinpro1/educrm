@@ -4,6 +4,7 @@ import "../recursos/estilos/VistaEstudiante.css";
 import FormularioEstudiante from "./FormularioEstudiante";
 import Modal from "../componentes/ui/Modal";
 import DetalleEstudiante from "../componentes/ui/DetalleEstudiante";
+import ImportarEstudiantesCSV from "../componentes/ui/ImportarEstudiantesCSV";
 import {
   getEstudiantes,
   deleteEstudiante,
@@ -23,6 +24,8 @@ function Estudiantes() {
   const [modalEliminarOpen, setModalEliminarOpen] = useState(false);
   const [estudianteAEliminar, setEstudianteAEliminar] = useState(null);
   const [modalVerOpen, setModalVerOpen] = useState(false);
+  const [modalImportOpen, setModalImportOpen] = useState(false);
+
   
 
   //Cargar estudiantes desde el back
@@ -194,9 +197,15 @@ const cancelarEliminar = () => {
           <h1>Gestión de Estudiantes</h1>
           <p>Administre la información de los estudiantes del CCSP</p>
         </div>
-        <button className="btn-nuevo" onClick={() => setModo("nuevo")}>
-          + Nuevo Estudiante
-        </button>
+        <div className="acciones-primarias" style={{ display: 'flex' }}>
+          <button className="btn-importar" onClick={() => setModalImportOpen(true)}>
+            <span className="bi bi-file-earmark-spreadsheet"></span> Importar CSV
+          </button>
+          <button className="btn-nuevo" onClick={() => setModo("nuevo")}>
+            + Nuevo Estudiante
+          </button>
+        </div>
+
       </div>
 
       {/* Buscador + filtros */}
@@ -346,7 +355,20 @@ const cancelarEliminar = () => {
       </div>
     </div>
   </Modal>
+
+      <Modal
+        isOpen={modalImportOpen}
+        onClose={() => setModalImportOpen(false)}
+        title="Importación Masiva de Estudiantes"
+        size="wide"
+      >
+        <ImportarEstudiantesCSV 
+          onClose={() => setModalImportOpen(false)} 
+          onFinalizar={cargarEstudiantes} 
+        />
+      </Modal>
     </div>
+
   );
 }
 
