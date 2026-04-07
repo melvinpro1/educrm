@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'estudiantes',
     'comunicaciones',
     'profesores',
+    'cursos',
     'corsheaders',
 ]
 

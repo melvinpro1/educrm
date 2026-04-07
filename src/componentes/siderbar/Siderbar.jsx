@@ -11,7 +11,9 @@ const opcionesMenu = [
   { id: "estudiantes", etiqueta: "Estudiantes" },
   { id: "encargados", etiqueta: "Encargados" },
   { id: "profesores", etiqueta: "Profesores" },
+  { id: "cursos", etiqueta: "Cursos" },
   { id: "comunicaciones", etiqueta: "Comunicaciones" },
+
 ];
 
 function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {

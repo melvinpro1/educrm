@@ -20,6 +20,7 @@ from rest_framework.routers import DefaultRouter
 from estudiantes.views import EncargadoViewSet, EstudianteViewSet
 from estudiantes.auth_views import login_view, logout_view, register_view
 from profesores.views import ProfesorViewSet
+from cursos.views import CursoViewSet
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -27,6 +28,7 @@ router = DefaultRouter()
 router.register(r'encargados', EncargadoViewSet, basename='encargados')
 router.register(r'estudiantes', EstudianteViewSet, basename='estudiantes')
 router.register(r'profesores', ProfesorViewSet, basename='profesores')
+router.register(r'cursos', CursoViewSet, basename='cursos')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

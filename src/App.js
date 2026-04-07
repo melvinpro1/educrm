@@ -8,6 +8,7 @@ import VistaEstudiante from "./paginas/VistaEstudiante.jsx";
 import VistaEncargados from "./paginas/VistaEncargado.jsx";
 import VistaComunicacion from "./paginas/VistaComunicacion.jsx";
 import VistaProfesores from "./paginas/VistaProfesores.jsx";
+import VistaCursos from "./paginas/VistaCursos.jsx";
 import { isAuthenticated } from "./api/auth";
 
 function App() {
@@ -90,7 +91,11 @@ function App() {
         return <VistaComunicacion />;
       case "profesores":
         return <VistaProfesores />;
+      case "cursos":
+        return <VistaCursos />;
+
       default:
+
         return <Home />;
     }
   };
