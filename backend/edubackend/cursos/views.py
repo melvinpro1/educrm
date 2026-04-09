@@ -23,7 +23,7 @@ class CursoViewSet(viewsets.ModelViewSet):
         else:
             queryset = queryset.filter(estado='activo')
 
-        return queryset.order_by('nombre', 'seccion')
+        return queryset.order_by('nombre')
 
     def destroy(self, request, *args, **kwargs):
         curso = self.get_object()

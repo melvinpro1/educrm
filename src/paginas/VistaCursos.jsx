@@ -43,9 +43,7 @@ function VistaCursos() {
   const filtrarPorBusqueda = (lista) =>
     lista.filter(
       (c) =>
-        c.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        c.codigo.toLowerCase().includes(busqueda.toLowerCase()) ||
-        c.seccion.toLowerCase().includes(busqueda.toLowerCase())
+        c.nombre.toLowerCase().includes(busqueda.toLowerCase())
     );
 
   const cursosFiltrados = filtrarPorBusqueda(cursos);
@@ -54,13 +52,9 @@ function VistaCursos() {
     if (cursoEditando) {
       const payload = {
         nombre: formData.nombre,
-        codigo: formData.codigo,
-        descripcion: formData.descripcion,
         nivel_grado: formData.nivel_grado,
-        seccion: formData.seccion,
         año_lectivo: formData.año_lectivo,
         horario: formData.horario,
-        cantidad_cupos: formData.cantidad_cupos,
         estado: formData.estado,
         id_profesor: formData.id_profesor,
       };
@@ -181,7 +175,7 @@ function VistaCursos() {
       <div className="estudiantes-filtros">
         <input
           type="text"
-          placeholder="Buscar por nombre, código o sección..."
+          placeholder="Buscar por nombre..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -226,7 +220,6 @@ function VistaCursos() {
                 </div>
                 <div>
                   <h3>{c.nombre}</h3>
-                  <p className="cedula">{c.codigo}</p>
                 </div>
               </div>
 
@@ -237,16 +230,10 @@ function VistaCursos() {
                 </span>
 
                 <p>
-                  <span className="bi bi-door-open"></span> Sección {c.seccion}
-                </p>
-                <p>
                   <span className="bi bi-calendar"></span> {c.año_lectivo}
                 </p>
                 <p>
                   <span className="bi bi-clock"></span> {c.horario}
-                </p>
-                <p>
-                  <span className="bi bi-people"></span> {c.cantidad_cupos} cupos
                 </p>
                 <p>
                   <span className="bi bi-person-badge"></span> {c.profesor_nombre}
@@ -302,7 +289,7 @@ function VistaCursos() {
         <div className="modal-confirmacion-contenido">
           <p className="modal-confirmacion-texto">
             ¿Seguro que deseas eliminar el curso{" "}
-            <strong>{cursoAEliminar?.nombre} ({cursoAEliminar?.codigo})</strong>?
+            <strong>{cursoAEliminar?.nombre}</strong>?
           </p>
 
           <div

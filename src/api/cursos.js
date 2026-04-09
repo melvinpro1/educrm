@@ -31,13 +31,9 @@ export async function eliminarCurso(id) {
 export async function crearCurso(formData) {
   const payload = {
     nombre: formData.nombre,
-    codigo: formData.codigo,
-    descripcion: formData.descripcion || "",
     nivel_grado: formData.nivel_grado,
-    seccion: formData.seccion,
     año_lectivo: parseInt(formData.año_lectivo),
     horario: formData.horario,
-    cantidad_cupos: parseInt(formData.cantidad_cupos),
     estado: formData.estado || "activo",
     id_profesor: formData.id_profesor,
   };
@@ -135,15 +131,3 @@ export async function actualizarCurso(id, payload) {
   }
 }
 
-export async function verificarCodigoCursoExistente(codigo, excludeId = null) {
-  try {
-    const cursos = await apiGet("/cursos/");
-    const codigoUpper = codigo.toUpperCase();
-    return cursos.some((c) => {
-      return c.codigo === codigoUpper && c.id_curso !== excludeId;
-    });
-  } catch (error) {
-    console.error("Error verificando código:", error);
-    return false;
-  }
-}

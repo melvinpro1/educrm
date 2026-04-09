@@ -14,14 +14,6 @@ function DetalleCurso({ curso }) {
             <span className="detalle-valor">{curso.nombre}</span>
           </div>
           <div className="detalle-campo">
-            <span className="detalle-label">Código</span>
-            <span className="detalle-valor">{curso.codigo}</span>
-          </div>
-          <div className="detalle-campo">
-            <span className="detalle-label">Sección</span>
-            <span className="detalle-valor">{curso.seccion}</span>
-          </div>
-          <div className="detalle-campo">
             <span className="detalle-label">Nivel/Grado</span>
             <span className="detalle-valor">{curso.nivel_grado}</span>
           </div>
@@ -50,16 +42,6 @@ function DetalleCurso({ curso }) {
             <span className="detalle-label">Horario</span>
             <span className="detalle-valor">
               {curso.horario || <span className="vacio">No especificado</span>}
-            </span>
-          </div>
-          <div className="detalle-campo">
-            <span className="detalle-label">Cantidad de Cupos</span>
-            <span className="detalle-valor">{curso.cantidad_cupos}</span>
-          </div>
-          <div className="detalle-campo">
-            <span className="detalle-label">Descripción</span>
-            <span className="detalle-valor">
-              {curso.descripcion || <span className="vacio">No especificado</span>}
             </span>
           </div>
         </div>
