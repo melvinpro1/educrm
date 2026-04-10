@@ -18,10 +18,6 @@ function DetalleCurso({ curso }) {
             <span className="detalle-valor">{curso.nivel_grado}</span>
           </div>
           <div className="detalle-campo">
-            <span className="detalle-label">Año Lectivo</span>
-            <span className="detalle-valor">{curso.año_lectivo}</span>
-          </div>
-          <div className="detalle-campo">
             <span className="detalle-label">Estado</span>
             <div>
               <span className={`detalle-badge ${curso.estado === "activo" ? "activo" : "inactivo"}`}>

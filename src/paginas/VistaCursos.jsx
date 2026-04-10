@@ -14,7 +14,6 @@ function VistaCursos() {
   const [modo, setModo] = useState("lista");
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("activos");
-  const [filtroAño, setFiltroAño] = useState(new Date().getFullYear());
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cursoEditando, setCursoEditando] = useState(null);
@@ -26,7 +25,7 @@ function VistaCursos() {
   async function cargarCursos() {
     setLoading(true);
     try {
-      const data = await obtenerCursos(filtroEstado, filtroAño);
+      const data = await obtenerCursos(filtroEstado);
       setCursos(data);
     } catch (err) {
       console.error("Error cargando cursos:", err);
@@ -38,7 +37,7 @@ function VistaCursos() {
 
   useEffect(() => {
     cargarCursos();
-  }, [filtroEstado, filtroAño]);
+  }, [filtroEstado]);
 
   const filtrarPorBusqueda = (lista) =>
     lista.filter(
@@ -53,7 +52,6 @@ function VistaCursos() {
       const payload = {
         nombre: formData.nombre,
         nivel_grado: formData.nivel_grado,
-        año_lectivo: formData.año_lectivo,
         horario: formData.horario,
         estado: formData.estado,
         id_profesor: formData.id_profesor,
@@ -127,8 +125,6 @@ function VistaCursos() {
     setCursoViendo(null);
   };
 
-  const años = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
-
   if (modo === "nuevo" || modo === "editar") {
     return (
       <div className="estudiantes">
@@ -196,18 +192,7 @@ function VistaCursos() {
           ))}
         </div>
 
-        <div className="filtro-año">
-          <select
-            value={filtroAño}
-            onChange={(e) => setFiltroAño(parseInt(e.target.value))}
-          >
-            {años.map((año) => (
-              <option key={año} value={año}>
-                {año}
-              </option>
-            ))}
-          </select>
-        </div>
+
       </div>
 
       <div className="estudiantes-grid">
@@ -229,9 +214,6 @@ function VistaCursos() {
                   {c.estado === "activo" ? "activo" : "inactivo"}
                 </span>
 
-                <p>
-                  <span className="bi bi-calendar"></span> {c.año_lectivo}
-                </p>
                 <p>
                   <span className="bi bi-clock"></span> {c.horario}
                 </p>

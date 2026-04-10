@@ -6,10 +6,10 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
   const [formData, setFormData] = useState({
     nombre: "",
     nivel_grado: "",
-    año_lectivo: new Date().getFullYear(),
     horario: "",
     estado: "activo",
     id_profesor: "",
+    nota: "",
   });
 
   const [errores, setErrores] = useState({});
@@ -36,10 +36,10 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
       setFormData({
         nombre: datosIniciales.nombre || "",
         nivel_grado: datosIniciales.nivel_grado || "",
-        año_lectivo: datosIniciales.año_lectivo || new Date().getFullYear(),
         horario: datosIniciales.horario || "",
         estado: datosIniciales.estado || "activo",
         id_profesor: datosIniciales.id_profesor || "",
+        nota: datosIniciales.nota || "",
       });
     }
   }, [datosIniciales]);
@@ -47,11 +47,7 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
   const manejarCambio = (e) => {
     const { name, value } = e.target;
 
-    if (name === "año_lectivo") {
-      setFormData((prev) => ({ ...prev, [name]: value === "" ? "" : parseInt(value) }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
 
@@ -127,19 +123,6 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
 
 
         <div className="campo">
-          <label>Año Lectivo *</label>
-          <input
-            type="number"
-            name="año_lectivo"
-            placeholder="Ej: 2026"
-            value={formData.año_lectivo}
-            onChange={manejarCambio}
-            required
-            min="2000"
-          />
-        </div>
-
-        <div className="campo">
           <label>Horario *</label>
           <input
             name="horario"
@@ -174,6 +157,20 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
             ))}
           </select>
           {errores.id_profesor && <span className="mensaje-error">{errores.id_profesor}</span>}
+        </div>
+
+        <div className="campo">
+          <label>Nota</label>
+          <input
+            type="number"
+            name="nota"
+            placeholder="Ej: 8.5"
+            value={formData.nota}
+            onChange={manejarCambio}
+            min="0"
+            max="10"
+            step="0.1"
+          />
         </div>
 
         {datosIniciales && (

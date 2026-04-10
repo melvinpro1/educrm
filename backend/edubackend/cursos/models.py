@@ -12,8 +12,8 @@ class Curso(models.Model):
     id_curso = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=150)
     nivel_grado = models.CharField(max_length=20)  # Ej: Cuarto, Quinto
-    año_lectivo = models.IntegerField()  # Ej: 2026
     horario = models.CharField(max_length=100)  # Ej: Lunes 8:00-9:40
+    nota = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)  # Ej: 8.5
     estado = models.CharField(
         max_length=20,
         choices=ESTADO_CHOICES,
@@ -37,4 +37,4 @@ class Curso(models.Model):
         verbose_name_plural = 'Cursos'
 
     def __str__(self):
-        return f"{self.nombre} ({self.año_lectivo})"
+        return f"{self.nombre}"
