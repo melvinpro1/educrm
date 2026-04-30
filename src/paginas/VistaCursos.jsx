@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import "../recursos/estilos/VistaEstudiante.css";
 import FormularioCurso from "./FormularioCurso";
 import Modal from "../componentes/ui/Modal";
@@ -35,9 +35,11 @@ function VistaCursos() {
     }
   }
 
+  const memoizedCargarCursos = useCallback(cargarCursos, [filtroEstado]);
+
   useEffect(() => {
-    cargarCursos();
-  }, [filtroEstado]);
+    memoizedCargarCursos();
+  }, [memoizedCargarCursos]);
 
   const filtrarPorBusqueda = (lista) =>
     lista.filter(
