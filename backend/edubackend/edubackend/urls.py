@@ -21,6 +21,7 @@ from estudiantes.views import EncargadoViewSet, EstudianteViewSet
 from estudiantes.auth_views import login_view, logout_view, register_view
 from profesores.views import ProfesorViewSet
 from cursos.views import CursoViewSet
+from activos.views import ActivoViewSet, PrestamoViewSet
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,6 +30,8 @@ router.register(r'encargados', EncargadoViewSet, basename='encargados')
 router.register(r'estudiantes', EstudianteViewSet, basename='estudiantes')
 router.register(r'profesores', ProfesorViewSet, basename='profesores')
 router.register(r'cursos', CursoViewSet, basename='cursos')
+router.register(r'activos', ActivoViewSet, basename='activos')
+router.register(r'prestamos', PrestamoViewSet, basename='prestamos')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

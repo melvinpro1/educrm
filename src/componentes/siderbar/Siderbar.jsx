@@ -13,7 +13,8 @@ const opcionesMenu = [
   { id: "profesores", etiqueta: "Profesores" },
   { id: "cursos", etiqueta: "Cursos" },
   { id: "comunicaciones", etiqueta: "Comunicaciones" },
-
+  { id: "activos", etiqueta: "Activos" },
+  { id: "prestamos", etiqueta: "Préstamos" },
 ];
 
 function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {

@@ -1,0 +1,101 @@
+/* Badge de estado del activo */
+.badge-estado {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.badge-disponible {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge-prestado {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badge-mantenimiento {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Botón prestar */
+.btn-prestar {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.btn-prestar:hover:not(:disabled) {
+  background-color: #dbeafe;
+}
+
+.btn-prestar:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Select filtro tipo */
+.select-filtro-tipo {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* Tabla de préstamos */
+.tabla-prestamos-contenedor {
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.tabla-prestamos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla-prestamos th {
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.tabla-prestamos td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.tabla-prestamos tr:hover td {
+  background-color: #f9fafb;
+}
+
+/* Botón devolver */
+.btn-devolver {
+  background-color: #003ea5;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.btn-devolver:hover {
+  background-color: #002d7a;
+}
