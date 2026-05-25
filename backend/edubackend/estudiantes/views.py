@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from django.db.models import Count, Q
 from django.db import transaction
+from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Encargado, Estudiante, HistorialAccion
 from .serializers import EncargadoSerializer, EstudianteSerializer, HistorialAccionSerializer
+from .plantilla_generator import generar_plantilla_csv_mejorada, generar_plantilla_info, generar_plantilla_excel
 from comunicaciones.models import Correo
 
 
@@ -273,6 +275,27 @@ class EstudianteViewSet(viewsets.ModelViewSet):
             "errores": errors,
             "total_procesados": created_count + updated_count
         }, status=status.HTTP_200_OK if not errors else status.HTTP_207_MULTI_STATUS)
+
+    @action(detail=False, methods=['get'], url_path='descargar-plantilla')
+    def descargar_plantilla(self, request):
+        """
+        Descarga la plantilla Excel profesional para importar estudiantes
+        """
+        plantilla_excel = generar_plantilla_excel()
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="Plantilla_Estudiantes_EduCRM.xlsx"'
+        response.write(plantilla_excel)
+        return response
+
+    @action(detail=False, methods=['get'], url_path='info-plantilla')
+    def info_plantilla(self, request):
+        """
+        Retorna información sobre la plantilla de importación
+        """
+        info = generar_plantilla_info()
+        return Response(info, status=status.HTTP_200_OK)
 
 
 # Create your views here.
