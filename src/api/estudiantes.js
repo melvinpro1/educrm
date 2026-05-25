@@ -134,3 +134,27 @@ export async function getHistorialAcciones() {
     return [];
   }
 }
+
+export async function uploadEstudiantesCSV(estudiantes) {
+  const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+  try {
+    const res = await fetch(`${API_BASE}/estudiantes/upload-bulk/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(estudiantes),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok && res.status !== 207) {
+      return { ok: false, error: data?.error || "Error en la carga masiva." };
+    }
+
+    return { ok: true, data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err.message || "Error al conectar con el servidor para la carga masiva.",
+    };
+  }
+}
