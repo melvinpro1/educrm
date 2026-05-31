@@ -1,11 +1,14 @@
 from datetime import date
 from django.db.models import Q
+from django.db import transaction
+from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Activo, Prestamo
 from .serializers import ActivoSerializer, PrestamoSerializer
+from .plantilla_generator import generar_plantilla_excel, generar_plantilla_info
 
 
 class ActivoViewSet(viewsets.ModelViewSet):
@@ -50,6 +53,93 @@ class ActivoViewSet(viewsets.ModelViewSet):
             {'mensaje': 'Activo eliminado exitosamente.'},
             status=status.HTTP_200_OK
         )
+
+    @action(detail=False, methods=['post'], url_path='upload-bulk')
+    def upload_bulk(self, request):
+        """
+        Recibe una lista de activos (en JSON) y los crea.
+        Maneja transacciones y devuelve resumen de errores por fila.
+        """
+        data = request.data
+        if not isinstance(data, list):
+            return Response(
+                {"error": "Se esperaba una lista de objetos activo."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        created_count = 0
+        errors = []
+
+        with transaction.atomic():
+            for index, item in enumerate(data):
+                try:
+                    # Validar campos obligatorios
+                    nombre = str(item.get('nombre', '')).strip()
+                    tipo = str(item.get('tipo', '')).strip().lower()
+                    estado = str(item.get('estado', 'disponible')).strip().lower()
+                    identificador = str(item.get('identificador', '')).strip()  # Opcional
+
+                    if not nombre or len(nombre) < 3:
+                        errors.append(f"Fila {index + 1}: El nombre es requerido (mínimo 3 caracteres).")
+                        continue
+
+                    if not tipo or tipo not in ['computadora', 'tablet', 'libro', 'proyector', 'otro']:
+                        errors.append(f"Fila {index + 1}: Tipo inválido '{tipo}'. Debe ser: computadora, tablet, libro, proyector, otro")
+                        continue
+
+                    if estado not in ['disponible', 'prestado', 'en_mantenimiento']:
+                        errors.append(f"Fila {index + 1}: Estado inválido '{estado}'. Debe ser: disponible, prestado, en_mantenimiento")
+                        continue
+
+                    # Crear el activo con identificador opcional
+                    Activo.objects.create(
+                        nombre=nombre,
+                        tipo=tipo,
+                        estado=estado,
+                        identificador=identificador if identificador else None
+                    )
+                    created_count += 1
+
+                except Exception as e:
+                    errors.append(f"Fila {index + 1}: Error: {str(e)}")
+        
+        return Response({
+            "success": True,
+            "creados": created_count,
+            "errores": errors,
+            "total_procesados": created_count
+        }, status=status.HTTP_200_OK if not errors else status.HTTP_207_MULTI_STATUS)
+
+    @action(detail=False, methods=['get'], url_path='descargar-plantilla')
+    def descargar_plantilla(self, request):
+        """
+        Descarga la plantilla Excel profesional para importar activos
+        Incluye los tipos de activos existentes dinámicamente
+        """
+        # Obtener tipos únicos de activos que existen en la BD
+        tipos_existentes = Activo.objects.values_list('tipo', flat=True).distinct()
+        tipos_list = sorted(list(set(tipos_existentes)))
+        
+        # Si no hay tipos en la BD, usar los tipos por defecto
+        if not tipos_list:
+            tipos_list = ['computadora', 'tablet', 'libro', 'proyector', 'otro']
+        
+        # Generar plantilla con los tipos dinámicos
+        plantilla_excel = generar_plantilla_excel(tipos_activos=tipos_list)
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="Plantilla_Activos_EduCRM.xlsx"'
+        response.write(plantilla_excel)
+        return response
+
+    @action(detail=False, methods=['get'], url_path='info-plantilla')
+    def info_plantilla(self, request):
+        """
+        Retorna información sobre la plantilla de importación
+        """
+        info = generar_plantilla_info()
+        return Response(info, status=status.HTTP_200_OK)
 
 
 class PrestamoViewSet(viewsets.ModelViewSet):

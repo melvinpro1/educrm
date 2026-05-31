@@ -1,5 +1,5 @@
 """
-Generador de plantillas mejoradas para importación de estudiantes
+Generador de plantillas mejoradas para importación de activos
 """
 import csv
 from io import StringIO, BytesIO
@@ -9,86 +9,68 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.datavalidation import DataValidation
 
+
 def generar_plantilla_csv_mejorada():
     """Genera una plantilla CSV mejorada con instrucciones y ejemplos"""
     output = StringIO()
     writer = csv.writer(output)
     
     # Escribir instrucciones como comentarios
-    writer.writerow(["INSTRUCCIONES PARA COMPLETAR LA PLANTILLA DE ESTUDIANTES"])
+    writer.writerow(["INSTRUCCIONES PARA COMPLETAR LA PLANTILLA DE ACTIVOS"])
     writer.writerow([])
-    writer.writerow(["CAMPOS OBLIGATORIOS: Cedula, Nombre, CorreoInstitucional, Telefono, Colegio, Grado"])
-    writer.writerow(["CAMPOS OPCIONALES: CorreoPersonal, Direccion, EncargadoNombre, EncargadoCorreo, EncargadoTelefono"])
+    writer.writerow(["CAMPOS OBLIGATORIOS: Nombre, Tipo, Estado"])
+    writer.writerow(["CAMPOS OPCIONALES: Ninguno"])
     writer.writerow([])
     writer.writerow(["REGLAS DE VALIDACION:"])
-    writer.writerow(["- Cedula: Números únicos sin espacios. Ej: 123456789"])
-    writer.writerow(["- Nombre: Texto con letras. Mínimo 3 caracteres. Ej: Juan Perez"])
-    writer.writerow(["- CorreoInstitucional: Formato email válido. Ej: juan@institución.com"])
-    writer.writerow(["- Telefono: Solo números. Ej: 88887777 o +506 8888 7777"])
-    writer.writerow(["- Colegio: Nombre del colegio de procedencia. Ej: Colegio Central"])
-    writer.writerow(["- Grado: Nivel académico. Ej: Decimo, Undecimo, Duodecimo"])
+    writer.writerow(["- Nombre: Texto descriptivo. Mínimo 3 caracteres. Ej: Computadora Lenovo ThinkPad"])
+    writer.writerow(["- Tipo: computadora, tablet, libro, proyector, otro"])
+    writer.writerow(["- Estado: disponible, prestado, en_mantenimiento"])
     writer.writerow([])
     writer.writerow(["COLUMNAS DEL CSV:"])
     writer.writerow([])
     
-    # Encabezados mejorados
+    # Encabezados
     headers = [
-        "Cedula",
         "Nombre",
-        "CorreoInstitucional",
-        "CorreoPersonal",
-        "Telefono",
-        "Colegio",
-        "Grado",
-        "Direccion",
-        "EncargadoNombre",
-        "EncargadoCorreo",
-        "EncargadoTelefono"
+        "Tipo",
+        "Estado"
     ]
     writer.writerow(headers)
     
     # Ejemplos de datos
     ejemplos = [
-        [
-            "123456789",
-            "Juan Perez",
-            "juan@institución.com",
-            "juan@gmail.com",
-            "88887777",
-            "Colegio Central",
-            "Decimo",
-            "Calle Principal 123, Casa 1",
-            "Maria Perez Garcia",
-            "maria@gmail.com",
-            "88887778"
-        ],
-        [
-            "987654321",
-            "Ana Rodriguez",
-            "ana@institución.com",
-            "",
-            "87776666",
-            "Liceo Bilingue",
-            "Undecimo",
-            "Av. Secundaria 456",
-            "Carlos Rodriguez",
-            "carlos@hotmail.com",
-            "87776667"
-        ]
+        ["Computadora Lenovo ThinkPad X1", "computadora", "disponible"],
+        ["iPad Air 10 pulgadas", "tablet", "disponible"],
+        ["Libro Análisis Matemático", "libro", "disponible"],
+        ["Proyector Epson PowerLite", "proyector", "disponible"],
+        ["Monitor LG 24 pulgadas", "otro", "disponible"],
     ]
     
     for ejemplo in ejemplos:
         writer.writerow(ejemplo)
     
     # Líneas vacías para datos del usuario
-    for i in range(8):
+    for i in range(15):
         writer.writerow([""] * len(headers))
     
     return output.getvalue()
 
 
-def generar_plantilla_excel():
-    """Genera una plantilla Excel profesional con formato y estilos"""
+def generar_plantilla_excel(tipos_activos=None):
+    """Genera una plantilla Excel profesional con formato y estilos
+    
+    Args:
+        tipos_activos: Lista de tipos de activos disponibles. Si es None, usa valores por defecto.
+    """
+    # Usar tipos por defecto si no se proporcionan
+    if tipos_activos is None:
+        tipos_activos = ['computadora', 'tablet', 'libro', 'proyector', 'otro']
+    
+    # Validar y limpiar tipos
+    tipos_activos = [str(t).strip().lower() for t in tipos_activos if t]
+    if not tipos_activos:
+        tipos_activos = ['computadora', 'tablet', 'libro', 'proyector', 'otro']
+    
     wb = Workbook()
     
     # ===== HOJA 1: INSTRUCCIONES =====
@@ -104,13 +86,12 @@ def generar_plantilla_excel():
     
     contenido_font = Font(name='Calibri', size=11)
     obligatorio_fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
-    advertencia_fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
     
     # Establecer ancho de columnas
     ws_instrucciones.column_dimensions['A'].width = 80
     
     # Título
-    ws_instrucciones['A1'] = "PLANTILLA DE IMPORTACIÓN DE ESTUDIANTES - EduCRM"
+    ws_instrucciones['A1'] = "PLANTILLA DE IMPORTACIÓN DE ACTIVOS - EduCRM"
     ws_instrucciones['A1'].font = titulo_font
     ws_instrucciones['A1'].fill = titulo_fill
     ws_instrucciones['A1'].alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
@@ -124,7 +105,7 @@ def generar_plantilla_excel():
     ws_instrucciones.row_dimensions[fila].height = 20
     
     fila += 1
-    ws_instrucciones[f'A{fila}'] = "Esta plantilla te ayuda a importar estudiantes de manera masiva al sistema. Completa la hoja 'Datos' con la información de los estudiantes."
+    ws_instrucciones[f'A{fila}'] = "Esta plantilla te ayuda a importar activos de manera masiva al sistema. Completa la hoja 'Datos' con la información de los activos (computadoras, tablets, libros, proyectores, etc)."
     ws_instrucciones[f'A{fila}'].font = contenido_font
     ws_instrucciones.row_dimensions[fila].height = 30
     ws_instrucciones[f'A{fila}'].alignment = Alignment(wrap_text=True)
@@ -137,44 +118,61 @@ def generar_plantilla_excel():
     ws_instrucciones.row_dimensions[fila].height = 20
     
     campos_obligatorios = [
-        "Cedula: Número único del estudiante (sin espacios ni caracteres especiales)",
-        "Nombre: Nombre completo del estudiante (mínimo 3 caracteres)",
-        "CorreoInstitucional: Email institucional (formato: usuario@dominio.com)",
-        "Telefono: Teléfono de contacto (solo números)",
-        "Colegio: Nombre del colegio de procedencia",
-        "Grado: Nivel académico (Decimo, Undecimo, Duodecimo, etc)"
+        "Nombre: Descripción única del activo (mínimo 3 caracteres). Ej: Computadora Lenovo ThinkPad X1",
+        "Tipo: Categoría del activo. Valores válidos: computadora, tablet, libro, proyector, otro",
+        "Estado: Situación actual del activo. Valores válidos: disponible, prestado, en_mantenimiento"
     ]
     
     for campo in campos_obligatorios:
         fila += 1
         ws_instrucciones[f'A{fila}'] = campo
         ws_instrucciones[f'A{fila}'].font = contenido_font
-        ws_instrucciones.row_dimensions[fila].height = 18
+        ws_instrucciones.row_dimensions[fila].height = 25
         ws_instrucciones[f'A{fila}'].alignment = Alignment(wrap_text=True)
     
-    # Sección 3: Campos Opcionales
+    # Sección 3: Tipos de Activos Válidos
     fila += 2
-    ws_instrucciones[f'A{fila}'] = "◇ CAMPOS OPCIONALES"
+    ws_instrucciones[f'A{fila}'] = "🏷️ TIPOS DE ACTIVOS DISPONIBLES"
     ws_instrucciones[f'A{fila}'].font = subtitulo_font
-    ws_instrucciones[f'A{fila}'].fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
+    ws_instrucciones[f'A{fila}'].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
     ws_instrucciones.row_dimensions[fila].height = 20
     
-    campos_opcionales = [
-        "CorreoPersonal: Email personal del estudiante",
-        "Direccion: Dirección del domicilio del estudiante",
-        "EncargadoNombre: Nombre del responsable/encargado",
-        "EncargadoCorreo: Email del encargado (importante para comunicaciones)",
-        "EncargadoTelefono: Teléfono del encargado"
+    tipos = [
+        "computadora: Computadoras de escritorio o portátiles",
+        "tablet: Tablets, iPads u otros dispositivos móviles similares",
+        "libro: Libros, diccionarios, enciclopedias y otros materiales impresos",
+        "proyector: Proyectores, televisores u otros equipos de visualización",
+        "otro: Cualquier otro tipo de activo no clasificado anteriormente"
     ]
     
-    for campo in campos_opcionales:
+    for tipo in tipos:
         fila += 1
-        ws_instrucciones[f'A{fila}'] = campo
+        ws_instrucciones[f'A{fila}'] = tipo
         ws_instrucciones[f'A{fila}'].font = contenido_font
         ws_instrucciones.row_dimensions[fila].height = 18
         ws_instrucciones[f'A{fila}'].alignment = Alignment(wrap_text=True)
     
-    # Sección 4: Ejemplos
+    # Sección 4: Estados Válidos
+    fila += 2
+    ws_instrucciones[f'A{fila}'] = "📊 ESTADOS DISPONIBLES"
+    ws_instrucciones[f'A{fila}'].font = subtitulo_font
+    ws_instrucciones[f'A{fila}'].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    ws_instrucciones.row_dimensions[fila].height = 20
+    
+    estados = [
+        "disponible: El activo está disponible para ser prestado",
+        "prestado: El activo está actualmente prestado a un estudiante",
+        "en_mantenimiento: El activo se encuentra en reparación o mantenimiento"
+    ]
+    
+    for estado in estados:
+        fila += 1
+        ws_instrucciones[f'A{fila}'] = estado
+        ws_instrucciones[f'A{fila}'].font = contenido_font
+        ws_instrucciones.row_dimensions[fila].height = 18
+        ws_instrucciones[f'A{fila}'].alignment = Alignment(wrap_text=True)
+    
+    # Sección 5: Ejemplos
     fila += 2
     ws_instrucciones[f'A{fila}'] = "📝 EJEMPLO DE DATOS CORRECTOS"
     ws_instrucciones[f'A{fila}'].font = subtitulo_font
@@ -182,8 +180,9 @@ def generar_plantilla_excel():
     ws_instrucciones.row_dimensions[fila].height = 20
     
     ejemplos_texto = [
-        "Cedula: 123456789 | Nombre: Juan Perez | Email: juan@institución.com | Teléfono: 88887777",
-        "Colegio: Colegio Central | Grado: Decimo | Encargado: Maria Perez | Email Encargado: maria@gmail.com"
+        "Nombre: Computadora Lenovo ThinkPad X1 | Tipo: computadora | Estado: disponible",
+        "Nombre: iPad Air 10 pulgadas | Tipo: tablet | Estado: disponible",
+        "Nombre: Libro Análisis Matemático | Tipo: libro | Estado: disponible",
     ]
     
     for ejemplo in ejemplos_texto:
@@ -198,19 +197,7 @@ def generar_plantilla_excel():
     ws_datos = wb.create_sheet("Datos")
     
     # Encabezados
-    headers = [
-        "Cedula",
-        "Nombre",
-        "CorreoInstitucional",
-        "CorreoPersonal",
-        "Telefono",
-        "Colegio",
-        "Grado",
-        "Direccion",
-        "EncargadoNombre",
-        "EncargadoCorreo",
-        "EncargadoTelefono"
-    ]
+    headers = ["Nombre", "Tipo", "Estado", "Identificador/Modelo"]
     
     # Estilos para encabezado
     header_font = Font(name='Calibri', size=11, bold=True, color="FFFFFF")
@@ -235,23 +222,16 @@ def generar_plantilla_excel():
     ws_datos.row_dimensions[1].height = 25
     
     # Ajustar ancho de columnas
-    anchos = [15, 20, 25, 25, 15, 20, 15, 30, 20, 25, 15]
+    anchos = [40, 18, 20, 30]
     for col_num, ancho in enumerate(anchos, 1):
         ws_datos.column_dimensions[get_column_letter(col_num)].width = ancho
     
-    # Agregar ejemplo de datos en la primera fila
+    # Agregar ejemplo de datos
     datos_ejemplo = [
-        "123456789",
-        "Juan Perez",
-        "juan@institución.com",
-        "juan@gmail.com",
-        "88887777",
-        "Colegio Central",
-        "Decimo",
-        "Calle Principal 123",
-        "Maria Perez",
-        "maria@gmail.com",
-        "88887778"
+        "Computadora Lenovo ThinkPad X1",
+        "computadora",
+        "disponible",
+        "SN: 1A2B3C4D5E"
     ]
     
     ejemplo_font = Font(name='Calibri', size=10, italic=True, color="999999")
@@ -265,9 +245,9 @@ def generar_plantilla_excel():
         cell.border = border
         cell.alignment = Alignment(horizontal='left', vertical='center')
     
-    # Agregar 18 filas vacías más para que el usuario complete
+    # Agregar 23 filas vacías más para que el usuario complete
     data_font = Font(name='Calibri', size=10)
-    for row_num in range(3, 21):
+    for row_num in range(3, 26):
         for col_num in range(1, len(headers) + 1):
             cell = ws_datos.cell(row=row_num, column=col_num)
             cell.border = border
@@ -276,18 +256,34 @@ def generar_plantilla_excel():
     
     # ===== AGREGAR VALIDACIÓN DE DATOS (DROPDOWNS) =====
     
-    # Validación para GRADO (Columna G, índice 7)
-    dv_grado = DataValidation(
+    # Generar fórmula de Tipo dinámicamente desde los tipos disponibles
+    tipos_formula = ','.join(tipos_activos)
+    
+    # Validación para TIPO (Columna B) - DINÁMICO
+    dv_tipo = DataValidation(
         type="list",
-        formula1='"Decimo,Undecimo,Duodecimo,Primero,Segundo,Tercero,Cuarto,Quinto,Sexto,Septimo,Octavo,Noveno"',
-        allow_blank=True
+        formula1=f'"{tipos_formula}"',
+        allow_blank=False
     )
-    dv_grado.error = 'Selecciona un grado válido'
-    dv_grado.errorTitle = 'Grado inválido'
-    dv_grado.prompt = 'Selecciona el grado del estudiante'
-    dv_grado.promptTitle = 'Grado'
-    ws_datos.add_data_validation(dv_grado)
-    dv_grado.add('G2:G21')  # Aplica a la columna G (Grado), filas 2-21
+    dv_tipo.error = f'Selecciona un tipo válido: {tipos_formula}'
+    dv_tipo.errorTitle = 'Tipo inválido'
+    dv_tipo.prompt = 'Selecciona un tipo de activo'
+    dv_tipo.promptTitle = 'Tipo'
+    ws_datos.add_data_validation(dv_tipo)
+    dv_tipo.add(f'B2:B26')  # Aplica a la columna B (Tipo), filas 2-26
+    
+    # Validación para ESTADO (Columna C)
+    dv_estado = DataValidation(
+        type="list",
+        formula1='"disponible,prestado,en_mantenimiento"',
+        allow_blank=False
+    )
+    dv_estado.error = 'Selecciona un estado válido: disponible, prestado, en_mantenimiento'
+    dv_estado.errorTitle = 'Estado inválido'
+    dv_estado.prompt = 'Selecciona el estado actual del activo'
+    dv_estado.promptTitle = 'Estado'
+    ws_datos.add_data_validation(dv_estado)
+    dv_estado.add(f'C2:C26')  # Aplica a la columna C (Estado), filas 2-26
     
     # Congelar la fila de encabezados
     ws_datos.freeze_panes = 'A2'
@@ -303,46 +299,51 @@ def generar_plantilla_info():
     """Genera información sobre la plantilla para mostrar en el frontend"""
     return {
         "campos_obligatorios": [
-            "Cedula",
             "Nombre",
-            "CorreoInstitucional",
-            "Telefono",
-            "Colegio",
-            "Grado"
+            "Tipo",
+            "Estado"
         ],
         "campos_opcionales": [
-            "CorreoPersonal",
-            "Direccion",
-            "EncargadoNombre",
-            "EncargadoCorreo",
-            "EncargadoTelefono"
+            "Identificador/Modelo"
+        ],
+        "tipos_validos": [
+            "computadora",
+            "tablet",
+            "libro",
+            "proyector",
+            "otro"
+        ],
+        "estados_validos": [
+            "disponible",
+            "prestado",
+            "en_mantenimiento"
         ],
         "validaciones": {
-            "Cedula": "Números únicos sin espacios. Ej: 123456789",
-            "Nombre": "Letras, mínimo 3 caracteres. Ej: Juan Perez",
-            "CorreoInstitucional": "Email válido. Ej: juan@institución.com",
-            "CorreoPersonal": "Email válido (opcional)",
-            "Telefono": "Solo números. Ej: 88887777",
-            "Colegio": "Nombre del colegio. Ej: Colegio Central",
-            "Grado": "Nivel. Ej: Decimo, Undecimo, Duodecimo",
-            "Direccion": "Domicilio completo (opcional)",
-            "EncargadoNombre": "Nombre del responsable (opcional)",
-            "EncargadoCorreo": "Email del responsable (opcional)",
-            "EncargadoTelefono": "Teléfono del responsable (opcional)"
+            "Nombre": "Texto descriptivo, mínimo 3 caracteres. Ej: Computadora Lenovo ThinkPad X1",
+            "Tipo": "Debe ser uno de: computadora, tablet, libro, proyector, otro",
+            "Estado": "Debe ser uno de: disponible, prestado, en_mantenimiento",
+            "Identificador/Modelo": "Campo opcional. Ej: SN: 1A2B3C4D5E, Modelo X1, Inventario #123"
         },
         "ejemplos": [
             {
-                "cedula": "123456789",
-                "nombre": "Juan Perez",
-                "correo_institucional": "juan@institución.com",
-                "correo_personal": "juan@gmail.com",
-                "telefono": "88887777",
-                "colegio": "Colegio Central",
-                "grado": "Decimo",
-                "direccion": "Calle Principal 123",
-                "encargado_nombre": "Maria Perez",
-                "encargado_correo": "maria@gmail.com",
-                "encargado_telefono": "88887778"
+                "nombre": "Computadora Lenovo ThinkPad X1",
+                "tipo": "computadora",
+                "estado": "disponible"
+            },
+            {
+                "nombre": "iPad Air 10 pulgadas",
+                "tipo": "tablet",
+                "estado": "disponible"
+            },
+            {
+                "nombre": "Libro Análisis Matemático",
+                "tipo": "libro",
+                "estado": "disponible"
+            },
+            {
+                "nombre": "Proyector Epson PowerLite",
+                "tipo": "proyector",
+                "estado": "disponible"
             }
         ]
     }

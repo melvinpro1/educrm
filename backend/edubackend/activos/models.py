@@ -19,6 +19,7 @@ class Activo(models.Model):
     tipo = models.CharField(max_length=50, choices=TIPO_CHOICES)
     nombre = models.CharField(max_length=200)
     estado = models.CharField(max_length=30, choices=ESTADO_CHOICES, default='disponible')
+    identificador = models.CharField(max_length=200, blank=True, null=True, help_text="Modelo, serie, número de identificación u otro identificador del activo")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 

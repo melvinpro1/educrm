@@ -439,3 +439,57 @@ button:disabled {
     padding: 10px;
   }
 }
+
+/* Badges y etiquetas */
+.tipo-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.estado-badge.estado-disponible {
+  background: #c8e6c9;
+  color: #2e7d32;
+}
+
+.estado-badge.estado-prestado {
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+.estado-badge.estado-en_mantenimiento {
+  background: #ffccbc;
+  color: #d84315;
+}
+
+.identificador-text {
+  color: #555;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.opcional {
+  color: #bdc3c7;
+  font-style: italic;
+}
+
+.estados-lista {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}

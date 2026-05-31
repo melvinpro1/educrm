@@ -4,6 +4,7 @@ import FormularioActivo from "./FormularioActivo";
 import FormularioPrestamo from "./FormularioPrestamo";
 import Modal from "../componentes/ui/Modal";
 import DetalleActivo from "../componentes/ui/DetalleActivo";
+import ImportarActivosCSV from "../componentes/ui/ImportarActivosCSV";
 import {
   obtenerActivos,
   crearActivo,
@@ -37,6 +38,8 @@ function VistaActivos() {
 
   const [modalPrestamoOpen, setModalPrestamoOpen] = useState(false);
   const [activoParaPrestar, setActivoParaPrestar] = useState(null);
+
+  const [modalImportOpen, setModalImportOpen] = useState(false);
 
   const cargarActivos = useCallback(async () => {
     setLoading(true);
@@ -184,9 +187,27 @@ function VistaActivos() {
           <h1>Gestión de Activos</h1>
           <p>Administre los activos del CCSP</p>
         </div>
-        <button className="btn-nuevo" onClick={() => setModo("nuevo")}>
-          + Nuevo Activo
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn-nuevo" onClick={() => setModo("nuevo")}>
+            + Nuevo Activo
+          </button>
+          <button 
+            className="btn-importar" 
+            onClick={() => setModalImportOpen(true)}
+            style={{
+              backgroundColor: '#4472C4',
+              color: 'white',
+              padding: '10px 20px',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            📥 Importar CSV
+          </button>
+        </div>
       </div>
 
       <div className="estudiantes-filtros">
@@ -358,6 +379,13 @@ function VistaActivos() {
           />
         )}
       </Modal>
+
+      {modalImportOpen && (
+        <ImportarActivosCSV 
+          onClose={() => setModalImportOpen(false)}
+          onFinalizar={() => cargarActivos()}
+        />
+      )}
     </div>
   );
 }

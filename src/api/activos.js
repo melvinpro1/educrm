@@ -69,3 +69,20 @@ export async function eliminarActivo(id) {
   }
   return { ok: true, mensaje: data?.mensaje };
 }
+
+export async function uploadActivosCSV(datos) {
+  const res = await fetch(`${API_BASE}/activos/upload-bulk/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: data?.error || "Error al importar activos",
+    };
+  }
+  return { ok: true, data };
+}
+

@@ -11,6 +11,7 @@ class ActivoSerializer(serializers.ModelSerializer):
             'id_activo',
             'tipo',
             'nombre',
+            'identificador',
             'estado',
             'fecha_creacion',
             'fecha_actualizacion',
