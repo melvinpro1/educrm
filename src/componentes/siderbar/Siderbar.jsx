@@ -17,7 +17,7 @@ const opcionesMenu = [
   { id: "prestamos", etiqueta: "Préstamos" },
 ];
 
-function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {
+function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {
   const usuario = getCurrentUser();
 
   const handleCerrarSesion = () => {
@@ -39,7 +39,7 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout }) {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${abierto ? "sidebar-abierto" : "sidebar-cerrado"}`}>
       {/* Logo + título */}
       <div className="sidebar-encabezado">
         <div className="sidebar-logo-contenedor">

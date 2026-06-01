@@ -1,0 +1,319 @@
+/* ===========================================
+   BOTÓN FLOTANTE
+   =========================================== */
+
+.floating-menu-boton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #003ea5 0%, #0056d4 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 4px 16px rgba(0, 62, 165, 0.3);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.floating-menu-boton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 24px rgba(0, 62, 165, 0.4);
+}
+
+.floating-menu-boton.activo {
+  background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+  transform: rotate(90deg);
+}
+
+.floating-menu-icono {
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+/* ===========================================
+   OVERLAY
+   =========================================== */
+
+.floating-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 101;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===========================================
+   CONTENEDOR DEL MENÚ
+   =========================================== */
+
+.floating-menu-contenedor {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 320px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+  z-index: 102;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scroll personalizado */
+.floating-menu-contenedor::-webkit-scrollbar {
+  width: 6px;
+}
+
+.floating-menu-contenedor::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.floating-menu-contenedor::-webkit-scrollbar-thumb {
+  background: #003ea5;
+  border-radius: 10px;
+}
+
+.floating-menu-contenedor::-webkit-scrollbar-thumb:hover {
+  background: #0056d4;
+}
+
+/* ===========================================
+   ENCABEZADO DEL MENÚ
+   =========================================== */
+
+.floating-menu-encabezado {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.floating-menu-usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.floating-menu-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #003ea5 0%, #0056d4 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.floating-menu-usuario-nombre {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.floating-menu-usuario-rol {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 2px 0 0 0;
+}
+
+.floating-menu-cerrar {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.floating-menu-cerrar:hover {
+  color: #111827;
+}
+
+/* ===========================================
+   CATEGORÍAS
+   =========================================== */
+
+.floating-menu-categorias {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.floating-menu-categoria {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.floating-menu-categoria:last-child {
+  border-bottom: none;
+}
+
+/* Encabezado de categoría */
+.floating-menu-categoria-encabezado {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.floating-menu-categoria-encabezado:hover {
+  background-color: #f9fafb;
+}
+
+.floating-menu-categoria-icono {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.floating-menu-categoria-nombre {
+  flex: 1;
+  text-align: left;
+}
+
+.floating-menu-categoria-toggle {
+  font-size: 11px;
+  color: #9ca3af;
+  transition: transform 0.3s ease;
+  display: inline-block;
+}
+
+.floating-menu-categoria-toggle.expandido {
+  transform: rotate(180deg);
+}
+
+/* Items de la categoría */
+.floating-menu-categoria-items {
+  background-color: #f9fafb;
+  padding: 4px 8px;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.floating-menu-item {
+  width: 100%;
+  padding: 10px 12px 10px 28px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+  border-radius: 6px;
+  margin: 2px 0;
+}
+
+.floating-menu-item:hover {
+  background-color: #e8f0ff;
+  color: #003ea5;
+}
+
+.floating-menu-item.activo {
+  background-color: #003ea5;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ===========================================
+   BOTÓN CERRAR SESIÓN
+   =========================================== */
+
+.floating-menu-cerrar-sesion {
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: 1px solid #fee;
+  border-top: 1px solid #e5e7eb;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 0 0 16px 16px;
+}
+
+.floating-menu-cerrar-sesion:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+/* ===========================================
+   RESPONSIVE
+   =========================================== */
+
+@media (max-width: 480px) {
+  .floating-menu-boton {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .floating-menu-contenedor {
+    width: calc(100vw - 32px);
+    right: 16px;
+    bottom: 82px;
+  }
+}
