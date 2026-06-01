@@ -25,6 +25,8 @@ function Estudiantes() {
   const [estudianteAEliminar, setEstudianteAEliminar] = useState(null);
   const [modalVerOpen, setModalVerOpen] = useState(false);
   const [modalImportOpen, setModalImportOpen] = useState(false);
+  const [modalConfirmacionOpen, setModalConfirmacionOpen] = useState(false);
+  const [mensajeConfirmacion, setMensajeConfirmacion] = useState("");
 
   
 
@@ -92,6 +94,9 @@ function Estudiantes() {
       await cargarEstudiantes();
       setModo("lista");
       setEstudianteEditando(null);
+      // Mostrar mensaje de confirmación
+      setMensajeConfirmacion(`Estudiante "${formData.nombre}" actualizado correctamente`);
+      setModalConfirmacionOpen(true);
     } else {
       // Modo creación - SÍ enviamos datos del encargado
       const result = await createEstudiante(formData);
@@ -104,6 +109,9 @@ function Estudiantes() {
       // Éxito: recargar y volver a lista
       await cargarEstudiantes();
       setModo("lista");
+      // Mostrar mensaje de confirmación
+      setMensajeConfirmacion(`Estudiante "${formData.nombre}" agregado correctamente`);
+      setModalConfirmacionOpen(true);
     }
   };
 
@@ -137,6 +145,12 @@ const confirmarEliminar = async () => {
 const cancelarEliminar = () => {
   setModalEliminarOpen(false);
   setEstudianteAEliminar(null);
+};
+
+// 🔹 Cerrar modal de confirmación
+const cerrarModalConfirmacion = () => {
+  setModalConfirmacionOpen(false);
+  setMensajeConfirmacion("");
 };
   // 🔹 Editar estudiante - ahora usa el formulario completo
   const manejarEditar = (est) => {
@@ -366,6 +380,27 @@ const cancelarEliminar = () => {
           onClose={() => setModalImportOpen(false)} 
           onFinalizar={cargarEstudiantes} 
         />
+      </Modal>
+
+      {/* Modal de confirmación - Estudiante agregado/actualizado */}
+      <Modal
+        isOpen={modalConfirmacionOpen}
+        onClose={cerrarModalConfirmacion}
+        title="✓ Operación Exitosa"
+        size="wide"
+      >
+        <div className="modal-confirmacion-contenido">
+          <p className="modal-confirmacion-texto">{mensajeConfirmacion}</p>
+          <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+            <button
+              type="button"
+              className="btn-aceptar"
+              onClick={cerrarModalConfirmacion}
+            >
+              Aceptar
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
 
