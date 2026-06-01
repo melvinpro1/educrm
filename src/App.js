@@ -18,6 +18,7 @@ function App() {
   const [autenticado, setAutenticado] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [mostrarRegistro, setMostrarRegistro] = useState(false);
+  const [sidebarAbierto, setSidebarAbierto] = useState(false);
 
   useEffect(() => {
     const estaAutenticado = isAuthenticated();
@@ -37,6 +38,7 @@ function App() {
   const handleLogout = () => {
     setAutenticado(false);
     setVistaActiva("home");
+    setSidebarAbierto(false);
   };
 
   const handleMostrarRegistro = () => {
@@ -108,10 +110,30 @@ function App() {
 
   return (
     <div className="layout-principal">
+      {/* Botón toggle del sidebar */}
+      {sidebarAbierto && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarAbierto(false)}
+        />
+      )}
+
+      <button
+        className={`boton-toggle-sidebar ${sidebarAbierto ? "activo" : ""}`}
+        onClick={() => setSidebarAbierto(!sidebarAbierto)}
+        title="Abrir/cerrar menú"
+      >
+        ☰
+      </button>
+
       <Sidebar
         vistaActiva={vistaActiva}
-        onCambiarVista={setVistaActiva}
+        onCambiarVista={(id) => {
+          setVistaActiva(id);
+          setSidebarAbierto(false);
+        }}
         onLogout={handleLogout}
+        abierto={sidebarAbierto}
       />
       <main className="contenido-principal">{renderContenido()}</main>
     </div>

@@ -237,14 +237,64 @@ body {
 .layout-principal {
   display: flex;
   min-height: 100vh;
+  position: relative;
+}
+
+/* Botón toggle del sidebar */
+.boton-toggle-sidebar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #003ea5 0%, #0056d4 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0, 62, 165, 0.25);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.boton-toggle-sidebar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 62, 165, 0.35);
+}
+
+.boton-toggle-sidebar.activo {
+  background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
+}
+
+/* Overlay cuando el sidebar está abierto */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 101;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Zona derecha que sí hace scroll */
 .contenido-principal {
-  margin-left: 260px;   /* 👈 mismo ancho del sidebar fijo */
-  padding: 24px 32px;
-  width: calc(100% - 260px);
-
+  padding: 50px 32px 24px 32px;
+  width: 100%;
   height: 100vh;
   overflow-y: auto;     /* 👈 aquí vive el scroll */
   background: #f3f6fb;

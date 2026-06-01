@@ -15,7 +15,20 @@
   bottom: 0;
 
   overflow-y: auto;     /* Si el menú crece, solo él hace scroll interno */
-  z-index: 10;
+  z-index: 102;
+  
+  /* Animación de slide */
+  transition: transform 0.3s ease;
+}
+
+/* Sidebar cerrado - se desliza hacia la izquierda */
+.sidebar-cerrado {
+  transform: translateX(-100%);
+}
+
+/* Sidebar abierto - posición normal */
+.sidebar-abierto {
+  transform: translateX(0);
 }
 
 
