@@ -9,14 +9,15 @@ function Login({ onLoginExitoso, onMostrarRegistro, onMostrarRecuperar }) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');
+  const [pendiente, setPendiente] = useState(false);
   const [cargando, setCargando] = useState(false);
 
   const manejarEnvio = async (e) => {
     e.preventDefault();
     setError('');
+    setPendiente(false);
     setCargando(true);
 
-    // Validaciones básicas
     if (!correo || !contrasena) {
       setError('Por favor, complete todos los campos');
       setCargando(false);
@@ -25,18 +26,16 @@ function Login({ onLoginExitoso, onMostrarRegistro, onMostrarRecuperar }) {
 
     try {
       const resultado = await login(correo, contrasena);
-      
+
       if (resultado.ok) {
-        // Login exitoso
-        console.log('Inicio de sesión exitoso:', resultado.data);
         onLoginExitoso();
+      } else if (resultado.pendiente_aprobacion) {
+        setPendiente(true);
       } else {
-        // Error en el login
         setError(resultado.error || 'Credenciales incorrectas');
       }
     } catch (err) {
       setError('Error al conectar con el servidor');
-      console.error('Error en login:', err);
     } finally {
       setCargando(false);
     }
@@ -56,6 +55,23 @@ function Login({ onLoginExitoso, onMostrarRegistro, onMostrarRecuperar }) {
 
         <h1 className="titulo-autenticacion">Bienvenido a EduCRM</h1>
         <p className="subtitulo-autenticacion">Inicie sesión para continuar</p>
+
+        {pendiente && (
+          <div
+            style={{
+              background: '#fef9c3',
+              border: '1px solid #fde68a',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginBottom: '12px',
+              color: '#92400e',
+              fontSize: '14px',
+              fontWeight: 500,
+            }}
+          >
+            ⏳ Su cuenta está <strong>pendiente de aprobación</strong> por el administrador. Por favor, espere.
+          </div>
+        )}
 
         {error && (
           <div className="mensaje-error-login">

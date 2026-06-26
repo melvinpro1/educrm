@@ -6,6 +6,7 @@ from estudiantes.auth_views import (
     login_view, logout_view, register_view, recuperar_view,
     UsuarioListCreateView, UsuarioDetailView,
     AprobarUsuarioView, UsuariosPendientesView, PermisoRolView,
+    NotasEncargadoView,
 )
 from profesores.views import ProfesorViewSet
 from cursos.views import CursoViewSet
@@ -40,6 +41,9 @@ urlpatterns = [
 
     # Permisos por rol
     path('api/auth/permisos-rol/', PermisoRolView.as_view(), name='permisos-rol'),
+
+    # Notas para encargado autenticado
+    path('api/auth/notas-encargado/', NotasEncargadoView.as_view(), name='notas-encargado'),
 ]
 
 if settings.DEBUG:

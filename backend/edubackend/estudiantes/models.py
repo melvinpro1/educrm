@@ -99,6 +99,10 @@ class PerfilUsuario(models.Model):
         User, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='aprobaciones_dadas'
     )
+    encargado_ref = models.ForeignKey(
+        'Encargado', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='usuarios_vinculados',
+    )
     fecha_aprobacion = models.DateTimeField(null=True, blank=True)
     fecha_registro = models.DateTimeField(default=timezone.now)
 

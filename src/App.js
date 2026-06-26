@@ -14,6 +14,7 @@ import VistaActivos from "./paginas/VistaActivos.jsx";
 import VistaPrestamos from "./paginas/VistaPrestamos.jsx";
 import VistaUsuarios from "./paginas/VistaUsuarios.jsx";
 import VistaPermisos from "./paginas/VistaPermisos.jsx";
+import VistaNotas from "./paginas/VistaNotas.jsx";
 import { isAuthenticated, tienePermiso, isAdmin } from "./api/auth";
 
 function App() {
@@ -119,6 +120,7 @@ function App() {
       case "activos":       return <VistaActivos />;
       case "prestamos":     return <VistaPrestamos />;
       case "usuarios":      return <VistaUsuarios />;
+      case "notas":         return <VistaNotas />;
       case "permisos":      return admin ? <VistaPermisos /> : null;
       default:              return <Home />;
     }

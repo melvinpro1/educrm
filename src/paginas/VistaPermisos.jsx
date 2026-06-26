@@ -179,22 +179,36 @@ function TabPermisos() {
 }
 
 /* ─── Pestaña de Aprobaciones Pendientes ─── */
+const API_BASE_P = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api";
+
 function TabAprobaciones() {
   const [pendientes, setPendientes] = useState([]);
+  const [encargados, setEncargados] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(null);
   const [rolesSeleccionados, setRolesSeleccionados] = useState({});
+  const [encargadosSeleccionados, setEncargadosSeleccionados] = useState({});
   const [mensaje, setMensaje] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
-    const res = await obtenerUsuariosPendientes();
-    if (res.ok) {
-      setPendientes(res.data);
+    const [resPend, resEnc] = await Promise.all([
+      obtenerUsuariosPendientes(),
+      fetch(`${API_BASE_P}/encargados/?estado=activos`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Token ${localStorage.getItem("token") || ""}`,
+        },
+      }).then((r) => r.json()).catch(() => []),
+    ]);
+
+    if (resPend.ok) {
+      setPendientes(resPend.data);
       const roles = {};
-      res.data.forEach((u) => { roles[u.id] = u.rol || "administrador"; });
+      resPend.data.forEach((u) => { roles[u.id] = u.rol || "administrador"; });
       setRolesSeleccionados(roles);
     }
+    setEncargados(Array.isArray(resEnc) ? resEnc : resEnc.results || []);
     setCargando(false);
   }, []);
 
@@ -204,13 +218,18 @@ function TabAprobaciones() {
 
   const mostrarMensaje = (tipo, texto) => {
     setMensaje({ tipo, texto });
-    setTimeout(() => setMensaje(null), 3000);
+    setTimeout(() => setMensaje(null), 3500);
   };
 
   const handleAprobar = async (usuario) => {
-    setProcesando(usuario.id);
     const rol = rolesSeleccionados[usuario.id] || "administrador";
-    const res = await aprobarUsuario(usuario.id, rol);
+    if (rol === "encargado" && !encargadosSeleccionados[usuario.id]) {
+      mostrarMensaje("error", "Debe seleccionar el encargado vinculado antes de aprobar.");
+      return;
+    }
+    setProcesando(usuario.id);
+    const encargado_id = rol === "encargado" ? encargadosSeleccionados[usuario.id] : null;
+    const res = await aprobarUsuario(usuario.id, rol, encargado_id);
     setProcesando(null);
     if (res.ok) {
       mostrarMensaje("ok", `${usuario.username} aprobado como ${rol}.`);
@@ -259,68 +278,97 @@ function TabAprobaciones() {
         </div>
       ) : (
         <div className="estudiantes-grid">
-          {pendientes.map((u) => (
-            <div key={u.id} className="tarjeta-estudiante">
-              <div className="tarjeta-contenido">
-                <div className="tarjeta-header">
-                  <div className="tarjeta-icono">
-                    <span className="bi bi-person-circle"></span>
+          {pendientes.map((u) => {
+            const rolActual = rolesSeleccionados[u.id] || "administrador";
+            return (
+              <div key={u.id} className="tarjeta-estudiante">
+                <div className="tarjeta-contenido">
+                  <div className="tarjeta-header">
+                    <div className="tarjeta-icono">
+                      <span className="bi bi-person-circle"></span>
+                    </div>
+                    <div>
+                      <h3>
+                        {u.first_name || u.last_name
+                          ? `${u.first_name} ${u.last_name}`.trim()
+                          : u.username}
+                      </h3>
+                      <p className="cedula">@{u.username}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3>
-                      {u.first_name || u.last_name
-                        ? `${u.first_name} ${u.last_name}`.trim()
-                        : u.username}
-                    </h3>
-                    <p className="cedula">@{u.username}</p>
+
+                  <div className="tarjeta-detalle">
+                    <p>
+                      <span className="bi bi-envelope-fill"></span> {u.email}
+                    </p>
+                    <p style={{ marginTop: "8px", fontWeight: 600, fontSize: "13px" }}>
+                      Asignar rol:
+                    </p>
+                    <select
+                      value={rolActual}
+                      onChange={(e) =>
+                        setRolesSeleccionados((prev) => ({ ...prev, [u.id]: e.target.value }))
+                      }
+                      style={selectStyle}
+                      disabled={procesando === u.id}
+                    >
+                      {ROLES.map((r) => (
+                        <option key={r.code} value={r.code}>
+                          {r.nombre}
+                        </option>
+                      ))}
+                    </select>
+
+                    {rolActual === "encargado" && (
+                      <>
+                        <p style={{ marginTop: "10px", fontWeight: 600, fontSize: "13px" }}>
+                          Vincular encargado:
+                        </p>
+                        <select
+                          value={encargadosSeleccionados[u.id] || ""}
+                          onChange={(e) =>
+                            setEncargadosSeleccionados((prev) => ({
+                              ...prev,
+                              [u.id]: e.target.value ? Number(e.target.value) : null,
+                            }))
+                          }
+                          style={{ ...selectStyle, borderColor: encargadosSeleccionados[u.id] ? "#d1d5db" : "#f59e0b" }}
+                          disabled={procesando === u.id}
+                        >
+                          <option value="">— Seleccione encargado —</option>
+                          {encargados.map((enc) => (
+                            <option key={enc.id_encargado} value={enc.id_encargado}>
+                              {enc.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <div className="tarjeta-detalle">
-                  <p>
-                    <span className="bi bi-envelope-fill"></span> {u.email}
-                  </p>
-                  <p style={{ marginTop: "8px", fontWeight: 600, fontSize: "13px" }}>
-                    Asignar rol:
-                  </p>
-                  <select
-                    value={rolesSeleccionados[u.id] || "administrador"}
-                    onChange={(e) =>
-                      setRolesSeleccionados((prev) => ({ ...prev, [u.id]: e.target.value }))
-                    }
-                    style={selectStyle}
+                <div className="tarjeta-acciones-vertical">
+                  <button
+                    className="btn-accion btn-editar"
+                    title="Aprobar"
                     disabled={procesando === u.id}
+                    onClick={() => handleAprobar(u)}
+                    style={{ background: "#059669", color: "#fff" }}
                   >
-                    {ROLES.map((r) => (
-                      <option key={r.code} value={r.code}>
-                        {r.nombre}
-                      </option>
-                    ))}
-                  </select>
+                    <span className="bi bi-check-circle"></span>
+                  </button>
+                  <button
+                    className="btn-accion btn-eliminar"
+                    title="Rechazar"
+                    disabled={procesando === u.id}
+                    onClick={() => handleRechazar(u)}
+                  >
+                    <span className="bi bi-x-circle"></span>
+                  </button>
                 </div>
               </div>
-
-              <div className="tarjeta-acciones-vertical">
-                <button
-                  className="btn-accion btn-editar"
-                  title="Aprobar"
-                  disabled={procesando === u.id}
-                  onClick={() => handleAprobar(u)}
-                  style={{ background: "#059669", color: "#fff" }}
-                >
-                  <span className="bi bi-check-circle"></span>
-                </button>
-                <button
-                  className="btn-accion btn-eliminar"
-                  title="Rechazar"
-                  disabled={procesando === u.id}
-                  onClick={() => handleRechazar(u)}
-                >
-                  <span className="bi bi-x-circle"></span>
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

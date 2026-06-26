@@ -51,12 +51,14 @@ export async function obtenerUsuariosPendientes() {
   }
 }
 
-export async function aprobarUsuario(id, rol) {
+export async function aprobarUsuario(id, rol, encargado_id = null) {
   try {
+    const body = { accion: "aprobar", rol };
+    if (encargado_id) body.encargado_id = encargado_id;
     const res = await fetch(`${API_BASE}/auth/usuarios/${id}/aprobar/`, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ accion: "aprobar", rol }),
+      body: JSON.stringify(body),
     });
     const json = await res.json().catch(() => null);
     if (!res.ok) throw new Error(json?.detail || "Error al aprobar usuario.");

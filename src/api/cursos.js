@@ -4,8 +4,7 @@ const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/ap
 
 export async function obtenerCursos(estado = "activos") {
   try {
-    let url = `/cursos/?estado=${estado}`;
-    return await apiGet(url);
+    return await apiGet(`/cursos/?estado=${estado}`);
   } catch (error) {
     console.error("Error obteniendo cursos:", error);
     return [];
@@ -32,7 +31,6 @@ export async function crearCurso(formData) {
     horario: formData.horario,
     estado: formData.estado || "activo",
     id_profesor: formData.id_profesor,
-    nota: formData.nota || null,
   };
 
   try {
@@ -41,43 +39,15 @@ export async function crearCurso(formData) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
     const data = await res.json().catch(() => null);
-
     if (!res.ok) {
-      let errorMsg = "Error al crear curso.";
-
-      if (data) {
-        if (typeof data === "string") {
-          errorMsg = data;
-        } else if (data.detail) {
-          errorMsg = data.detail;
-        } else if (data.non_field_errors) {
-          errorMsg = data.non_field_errors.join(", ");
-        } else {
-          const errors = Object.entries(data)
-            .map(([key, value]) => {
-              if (Array.isArray(value)) return `${key}: ${value.join(", ")}`;
-              if (typeof value === "object") return `${key}: ${JSON.stringify(value)}`;
-              return `${key}: ${value}`;
-            })
-            .join("\n");
-          errorMsg = errors || errorMsg;
-        }
-      }
-
-      const err = new Error(errorMsg);
-      err.detail = errorMsg;
-      throw err;
+      const errorMsg = _extraerError(data, "Error al crear curso.");
+      throw Object.assign(new Error(errorMsg), { detail: errorMsg });
     }
-
     return { ok: true, data };
   } catch (err) {
     const msg = err.detail || err.message || "";
-    return {
-      ok: false,
-      error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al crear curso.",
-    };
+    return { ok: false, error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al crear curso." };
   }
 }
 
@@ -88,43 +58,79 @@ export async function actualizarCurso(id, payload) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
     const data = await res.json().catch(() => null);
-
     if (!res.ok) {
-      let errorMsg = "Error al actualizar curso.";
-
-      if (data) {
-        if (typeof data === "string") {
-          errorMsg = data;
-        } else if (data.detail) {
-          errorMsg = data.detail;
-        } else if (data.non_field_errors) {
-          errorMsg = data.non_field_errors.join(", ");
-        } else {
-          const errors = Object.entries(data)
-            .map(([key, value]) => {
-              if (Array.isArray(value)) return `${key}: ${value.join(", ")}`;
-              if (typeof value === "object") return `${key}: ${JSON.stringify(value)}`;
-              return `${key}: ${value}`;
-            })
-            .join("\n");
-          errorMsg = errors || errorMsg;
-        }
-      }
-
-      const err = new Error(errorMsg);
-      err.detail = errorMsg;
-      throw err;
+      const errorMsg = _extraerError(data, "Error al actualizar curso.");
+      throw Object.assign(new Error(errorMsg), { detail: errorMsg });
     }
-
     return { ok: true, data };
   } catch (err) {
     const msg = err.detail || err.message || "";
-    return {
-      ok: false,
-      error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al actualizar curso.",
-    };
+    return { ok: false, error: msg === "Failed to fetch" ? "No se pudo conectar al servidor." : msg || "Error al actualizar curso." };
   }
 }
 
+// ── Inscripción de estudiantes ──────────────────────────────────────────────
+
+export async function obtenerEstudiantesCurso(cursoId) {
+  try {
+    return await apiGet(`/cursos/${cursoId}/estudiantes/`);
+  } catch (err) {
+    console.error("Error obteniendo estudiantes del curso:", err);
+    return [];
+  }
+}
+
+export async function agregarEstudiantesCurso(cursoId, estudiantesIds) {
+  try {
+    const res = await fetch(`${API_BASE}/cursos/${cursoId}/estudiantes/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estudiantes_ids: estudiantesIds }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.detail || "Error al agregar estudiantes.");
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+export async function quitarEstudianteCurso(cursoId, estudianteId) {
+  try {
+    const res = await fetch(`${API_BASE}/cursos/${cursoId}/estudiantes/${estudianteId}/`, {
+      method: "DELETE",
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.detail || "Error al quitar estudiante.");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+export async function actualizarNotaEstudiante(cursoId, estudianteId, nota) {
+  try {
+    const res = await fetch(`${API_BASE}/cursos/${cursoId}/estudiantes/${estudianteId}/`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nota: nota === "" ? null : nota }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) throw new Error(data?.detail || "Error al actualizar nota.");
+    return { ok: true, data };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+function _extraerError(data, fallback) {
+  if (!data) return fallback;
+  if (typeof data === "string") return data;
+  if (data.detail) return data.detail;
+  if (data.non_field_errors) return data.non_field_errors.join(", ");
+  const entries = Object.entries(data).map(([k, v]) =>
+    Array.isArray(v) ? `${k}: ${v.join(", ")}` : `${k}: ${v}`
+  );
+  return entries.join("\n") || fallback;
+}

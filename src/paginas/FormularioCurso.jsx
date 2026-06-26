@@ -9,7 +9,6 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
     horario: "",
     estado: "activo",
     id_profesor: "",
-    nota: "",
   });
 
   const [errores, setErrores] = useState({});
@@ -17,69 +16,42 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
   const [cargandoProfesores, setCargandoProfesores] = useState(true);
 
   useEffect(() => {
-    cargarProfesores();
+    obtenerProfesores("activos")
+      .then(setProfesores)
+      .catch(console.error)
+      .finally(() => setCargandoProfesores(false));
   }, []);
-
-  async function cargarProfesores() {
-    try {
-      const data = await obtenerProfesores("activos");
-      setProfesores(data);
-    } catch (err) {
-      console.error("Error cargando profesores:", err);
-    } finally {
-      setCargandoProfesores(false);
-    }
-  }
 
   useEffect(() => {
     if (datosIniciales) {
       setFormData({
-        nombre: datosIniciales.nombre || "",
+        nombre:      datosIniciales.nombre      || "",
         nivel_grado: datosIniciales.nivel_grado || "",
-        horario: datosIniciales.horario || "",
-        estado: datosIniciales.estado || "activo",
+        horario:     datosIniciales.horario     || "",
+        estado:      datosIniciales.estado      || "activo",
         id_profesor: datosIniciales.id_profesor || "",
-        nota: datosIniciales.nota || "",
       });
     }
   }, [datosIniciales]);
 
   const manejarCambio = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-
-
   const validarFormulario = () => {
     const nuevosErrores = {};
-
-    if (!formData.nombre || formData.nombre.trim() === "") {
-      nuevosErrores.nombre = "El nombre del curso es obligatorio";
-    }
-
-    if (!formData.nivel_grado || formData.nivel_grado.trim() === "") {
-      nuevosErrores.nivel_grado = "El nivel/grado es obligatorio";
-    }
-
-    if (!formData.horario || formData.horario.trim() === "") {
-      nuevosErrores.horario = "El horario es obligatorio";
-    }
-
-    if (!formData.id_profesor) {
-      nuevosErrores.id_profesor = "Debe seleccionar un profesor";
-    }
-
+    if (!formData.nombre?.trim())      nuevosErrores.nombre      = "El nombre del curso es obligatorio";
+    if (!formData.nivel_grado?.trim()) nuevosErrores.nivel_grado = "El nivel/grado es obligatorio";
+    if (!formData.horario?.trim())     nuevosErrores.horario     = "El horario es obligatorio";
+    if (!formData.id_profesor)         nuevosErrores.id_profesor = "Debe seleccionar un profesor";
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
 
   const manejarSubmit = (e) => {
     e.preventDefault();
-    if (validarFormulario()) {
-      onGuardar(formData);
-    }
+    if (validarFormulario()) onGuardar(formData);
   };
 
   return (
@@ -93,16 +65,13 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
           <label>Nombre del Curso *</label>
           <input
             name="nombre"
-            placeholder="Ej: Matemáticas 7°"
+            placeholder="Ej: Matemáticas"
             value={formData.nombre}
             onChange={manejarCambio}
-            required
             className={errores.nombre ? "input-error" : ""}
           />
           {errores.nombre && <span className="mensaje-error">{errores.nombre}</span>}
         </div>
-
-
 
         <div className="campo">
           <label>Nivel / Grado *</label>
@@ -110,7 +79,6 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
             name="nivel_grado"
             value={formData.nivel_grado}
             onChange={manejarCambio}
-            required
             className={errores.nivel_grado ? "input-error" : ""}
           >
             <option value="">Seleccionar grado</option>
@@ -120,8 +88,6 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
           {errores.nivel_grado && <span className="mensaje-error">{errores.nivel_grado}</span>}
         </div>
 
-
-
         <div className="campo">
           <label>Horario *</label>
           <input
@@ -129,13 +95,10 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
             placeholder="Ej: Lunes 8:00-9:40"
             value={formData.horario}
             onChange={manejarCambio}
-            required
             className={errores.horario ? "input-error" : ""}
           />
           {errores.horario && <span className="mensaje-error">{errores.horario}</span>}
         </div>
-
-
 
         <div className="campo">
           <label>Profesor *</label>
@@ -143,7 +106,6 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
             name="id_profesor"
             value={formData.id_profesor}
             onChange={manejarCambio}
-            required
             disabled={cargandoProfesores}
             className={errores.id_profesor ? "input-error" : ""}
           >
@@ -159,28 +121,10 @@ function FormularioCurso({ onGuardar, onCancelar, datosIniciales = null }) {
           {errores.id_profesor && <span className="mensaje-error">{errores.id_profesor}</span>}
         </div>
 
-        <div className="campo">
-          <label>Nota</label>
-          <input
-            type="number"
-            name="nota"
-            placeholder="Ej: 8.5"
-            value={formData.nota}
-            onChange={manejarCambio}
-            min="0"
-            max="10"
-            step="0.1"
-          />
-        </div>
-
         {datosIniciales && (
           <div className="campo">
-            <label>Estado *</label>
-            <select
-              name="estado"
-              value={formData.estado}
-              onChange={manejarCambio}
-            >
+            <label>Estado</label>
+            <select name="estado" value={formData.estado} onChange={manejarCambio}>
               <option value="activo">Activo</option>
               <option value="inactivo">Inactivo</option>
             </select>

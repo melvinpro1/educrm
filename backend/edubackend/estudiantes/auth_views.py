@@ -51,6 +51,7 @@ def _user_data(user):
         'rol': rol,
         'aprobado': aprobado,
         'vistas_permitidas': vistas,
+        'encargado_id': perfil.encargado_ref_id,
     }
 
 
@@ -312,6 +313,15 @@ class AprobarUsuarioView(APIView):
         perfil.aprobado = True
         perfil.aprobado_por = request.user
         perfil.fecha_aprobacion = timezone.now()
+
+        encargado_id = request.data.get('encargado_id')
+        if encargado_id and rol == 'encargado':
+            from .models import Encargado
+            try:
+                perfil.encargado_ref = Encargado.objects.get(pk=encargado_id)
+            except Encargado.DoesNotExist:
+                pass
+
         perfil.save()
 
         return Response({
@@ -388,6 +398,55 @@ class PermisoRolView(APIView):
                 )
 
         return Response({'detail': f'Permisos del rol {rol} actualizados correctamente.'})
+
+
+class NotasEncargadoView(APIView):
+    """Devuelve los cursos con notas de los estudiantes asociados al encargado autenticado."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            perfil = request.user.perfil
+        except PerfilUsuario.DoesNotExist:
+            return Response({'detail': 'Perfil no encontrado.'}, status=404)
+
+        if not perfil.encargado_ref:
+            return Response({'detail': 'No tiene un encargado vinculado.'}, status=400)
+
+        from cursos.models import EstudianteCurso
+        from cursos.serializers import CursoSerializer
+
+        estudiantes = list(perfil.encargado_ref.estudiantes.filter(activo=True))
+        est_ids = [e.id_estudiante for e in estudiantes]
+
+        inscripciones = (
+            EstudianteCurso.objects
+            .filter(id_estudiante_id__in=est_ids)
+            .select_related('id_curso', 'id_estudiante', 'id_curso__id_profesor')
+            .order_by('id_curso__nombre', 'id_estudiante__nombre')
+        )
+
+        # Agrupar por curso
+        cursos_mapa = {}
+        for ins in inscripciones:
+            cid = ins.id_curso.id_curso
+            if cid not in cursos_mapa:
+                cursos_mapa[cid] = {
+                    'id_curso': cid,
+                    'nombre': ins.id_curso.nombre,
+                    'nivel_grado': ins.id_curso.nivel_grado,
+                    'horario': ins.id_curso.horario,
+                    'profesor_nombre': ins.id_curso.id_profesor.nombre,
+                    'estudiantes': [],
+                }
+            cursos_mapa[cid]['estudiantes'].append({
+                'id_estudiante_pk': ins.id_estudiante.id_estudiante,
+                'nombre': ins.id_estudiante.nombre,
+                'cedula': ins.id_estudiante.cedula,
+                'nota': ins.nota,
+            })
+
+        return Response(list(cursos_mapa.values()))
 
 
 @api_view(['POST'])
