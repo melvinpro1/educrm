@@ -15,6 +15,7 @@ const opcionesMenu = [
   { id: "comunicaciones", etiqueta: "Comunicaciones" },
   { id: "activos", etiqueta: "Activos" },
   { id: "prestamos", etiqueta: "Préstamos" },
+  { id: "usuarios", etiqueta: "Usuarios" },
 ];
 
 function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {

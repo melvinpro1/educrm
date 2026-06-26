@@ -12,6 +12,7 @@ import VistaProfesores from "./paginas/VistaProfesores.jsx";
 import VistaCursos from "./paginas/VistaCursos.jsx";
 import VistaActivos from "./paginas/VistaActivos.jsx";
 import VistaPrestamos from "./paginas/VistaPrestamos.jsx";
+import VistaUsuarios from "./paginas/VistaUsuarios.jsx";
 import { isAuthenticated } from "./api/auth";
 
 function App() {
@@ -117,7 +118,8 @@ function App() {
         return <VistaActivos />;
       case "prestamos":
         return <VistaPrestamos />;
-
+      case "usuarios":
+        return <VistaUsuarios />;
       default:
 
         return <Home />;
