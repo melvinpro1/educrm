@@ -1,0 +1,1346 @@
+================================================================================
+        INVENTARIO COMPLETO DEL PROYECTO EduCRM
+        React (Frontend) + Django REST Framework (Backend)
+        Base de datos: Microsoft SQL Server
+        Generado: 2026-06-15
+================================================================================
+
+
+================================================================================
+1. ESTRUCTURA DE DIRECTORIOS
+================================================================================
+
+educrm/
+├── src/
+│   ├── api/
+│   │   ├── activos.js
+│   │   ├── auth.js
+│   │   ├── client.js
+│   │   ├── comunicaciones.js
+│   │   ├── cursos.js
+│   │   ├── dashboard.js
+│   │   ├── encargados.js
+│   │   ├── estudiantes.js
+│   │   ├── prestamos.js
+│   │   └── profesores.js
+│   ├── componentes/
+│   │   ├── FloatingMenu/
+│   │   ├── siderbar/
+│   │   │   ├── Siderbar.jsx
+│   │   │   └── Siderbar.css
+│   │   └── ui/
+│   │       ├── AutocompleteColegios.jsx
+│   │       ├── BotonPrincipal.jsx
+│   │       ├── CampoTexto.jsx
+│   │       ├── DetalleActivo.jsx
+│   │       ├── DetalleCurso.jsx
+│   │       ├── DetalleEncargado.jsx
+│   │       ├── DetalleEstudiante.jsx
+│   │       ├── DetalleProfesor.jsx
+│   │       ├── ImportarActivosCSV.jsx
+│   │       ├── ImportarEstudiantesCSV.jsx
+│   │       └── Modal.jsx
+│   ├── paginas/
+│   │   ├── FormularioActivo.jsx
+│   │   ├── FormularioCurso.jsx
+│   │   ├── FormularioEncargado.jsx
+│   │   ├── FormularioEstudiante.jsx
+│   │   ├── FormularioPrestamo.jsx
+│   │   ├── FormularioProfesor.jsx
+│   │   ├── Home.jsx
+│   │   ├── Login.jsx
+│   │   ├── Registro.jsx
+│   │   ├── VistaActivos.jsx
+│   │   ├── VistaComunicacion.jsx
+│   │   ├── VistaCursos.jsx
+│   │   ├── VistaEncargado.jsx
+│   │   ├── VistaEstudiante.jsx
+│   │   ├── VistaPrestamos.jsx
+│   │   └── VistaProfesores.jsx
+│   ├── utils/
+│   │   └── validaciones.js
+│   ├── data/
+│   │   └── colegiosData.js
+│   ├── recursos/
+│   │   ├── estilos/ (múltiples CSS)
+│   │   └── imagenes/ (logo.jpg, etc.)
+│   ├── App.js
+│   ├── index.js
+│   └── index.css
+├── backend/
+│   └── edubackend/
+│       ├── activos/
+│       ├── comunicaciones/
+│       ├── cursos/
+│       ├── estudiantes/
+│       ├── profesores/
+│       ├── edubackend/ (settings, urls, wsgi)
+│       ├── manage.py
+│       └── requirements.txt
+├── package.json
+├── .env.local
+└── .env.example
+
+
+================================================================================
+2. MÓDULOS / PÁGINAS FRONTEND (src/paginas/)
+================================================================================
+
+--------------------------------------------------------------------------------
+2.1 LOGIN (Login.jsx)
+--------------------------------------------------------------------------------
+Propósito: Página de autenticación para iniciar sesión
+
+CAMPOS DEL FORMULARIO:
+  - Correo electrónico o Usuario (text, requerido)
+  - Contraseña (password, requerido)
+
+BOTONES:
+  - "Continuar con Google" (botón secundario - no implementado actualmente)
+  - "Iniciar sesión" (tipo submit)
+  - Enlace "Regístrese aquí" → navega a página de Registro
+
+VALIDACIONES:
+  - Verifica que los campos no estén vacíos
+  - Muestra mensaje de error si las credenciales son incorrectas
+
+PROCESO:
+  1. Usuario ingresa username y password
+  2. Llama a login(username, password) del API
+  3. Backend retorna { token, user }
+  4. Guarda token en localStorage como "authToken"
+  5. Guarda user en localStorage como "user" (JSON)
+  6. Redirecciona a Home
+
+--------------------------------------------------------------------------------
+2.2 REGISTRO (Registro.jsx)
+--------------------------------------------------------------------------------
+Propósito: Página de registro de nuevos usuarios
+
+CAMPOS DEL FORMULARIO:
+  - Nombre (text, opcional)
+  - Apellido (text, opcional)
+  - Nombre de Usuario (text, requerido)
+  - Correo Electrónico (email, requerido)
+  - Contraseña (password, mínimo 6 caracteres, requerido)
+  - Confirmar Contraseña (password, requerido)
+
+VALIDACIONES:
+  - Las contraseñas deben coincidir
+  - Email debe ser válido (regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+  - Contraseña mínimo 6 caracteres
+  - Todos los campos requeridos deben estar llenos
+
+BOTONES:
+  - "Registrarse" (tipo submit)
+  - Enlace "Inicie sesión aquí" → volver a Login
+
+--------------------------------------------------------------------------------
+2.3 HOME / PANEL PRINCIPAL (Home.jsx)
+--------------------------------------------------------------------------------
+Propósito: Panel principal con estadísticas del sistema
+
+SECCIONES:
+  - Encabezado con título y fecha actual del sistema
+  - 4 Tarjetas de KPIs/Estadísticas:
+      * Total Estudiantes Activos
+      * Total Encargados
+      * Comunicaciones Enviadas
+      * Total Correos
+  - Gráfico Pie Chart: distribución por nivel académico
+      * Cuarto Nivel (badge violeta)
+      * Quinto Nivel (badge verde)
+  - Resumen de actividad (4 items)
+  - Historial de transacciones/acciones (tabla dinámica)
+
+TIPOS DE ACCIONES EN HISTORIAL:
+  - crear    → icono "+"
+  - editar   → icono lápiz
+  - eliminar → icono basura
+  - enviar   → icono sobre/envío
+
+DATOS QUE CONSUME:
+  - getDashboardStats() retorna:
+      * estudiantes_activos
+      * estudiantes_totales
+      * encargados_totales
+      * comunicaciones_enviadas
+      * correos_totales
+      * estudiantes_por_nivel: [{ nombre, valor }]
+  - getHistorialAcciones() retorna:
+      * id
+      * tipo_accion
+      * descripcion
+      * detalles
+      * usuario
+      * fecha_hora
+
+--------------------------------------------------------------------------------
+2.4 VISTA ESTUDIANTES (VistaEstudiante.jsx)
+--------------------------------------------------------------------------------
+Propósito: Lista y gestión completa de estudiantes
+
+MODOS:
+  - "lista"  → muestra tarjetas de estudiantes
+  - "nuevo"  → muestra FormularioEstudiante en modo creación
+  - "editar" → muestra FormularioEstudiante en modo edición
+
+FILTROS DISPONIBLES:
+  - Búsqueda por nombre o cédula (input text)
+  - Estado: [Activos] [Inactivos] [Todos]
+  - Nivel: [Cuarto Nivel] [Quinto Nivel] [Todos]
+
+INFORMACIÓN MOSTRADA POR TARJETA:
+  - Icono + Nombre completo + Cédula
+  - Badge de Nivel (Cuarto=violeta, Quinto=verde)
+  - Estado (activo / inactivo)
+  - Correo institucional
+  - Correo personal
+  - Nombre del encargado
+
+BOTONES POR TARJETA (acciones):
+  - Ver (ojo)      → abre Modal con DetalleEstudiante
+  - Editar (lápiz) → cambia a modo "editar"
+  - Eliminar (basura) → abre Modal de confirmación
+
+BOTONES PRINCIPALES:
+  - "+ Nuevo Estudiante" → cambia a modo "nuevo"
+  - "Importar CSV" → abre Modal de importación masiva
+
+MODALES:
+  - Modal Ver Detalle
+  - Modal Confirmar Eliminación (con nombre del estudiante)
+  - Modal Importar CSV (ImportarEstudiantesCSV)
+  - Modal Confirmación post-creación/edición
+
+--------------------------------------------------------------------------------
+2.5 FORMULARIO ESTUDIANTE (FormularioEstudiante.jsx)
+--------------------------------------------------------------------------------
+Propósito: Crear o editar un estudiante junto con su encargado
+
+SECCIÓN DATOS DEL ESTUDIANTE:
+  - Cédula (formato #-####-####, requerido)
+      * Deshabilitado en modo edición
+      * Verifica duplicados en tiempo real
+  - Nombre Completo (text, requerido)
+  - Correo Institucional (email, requerido)
+  - Correo Personal (email, opcional, debe ser distinto al institucional)
+  - Teléfono (formato ####-####, opcional)
+  - Colegio de procedencia (autocomplete con lista de colegios CR)
+  - Nivel Académico (select: Cuarto Nivel / Quinto Nivel, requerido)
+  - Dirección (textarea, opcional)
+
+SECCIÓN DATOS DEL ENCARGADO:
+  - Nombre del Encargado (text, requerido)
+      * Deshabilitado en modo edición (read-only)
+  - Correo del Encargado (email, requerido)
+      * Deshabilitado en modo edición (read-only)
+  - Teléfono del Encargado (formato ####-####)
+      * Deshabilitado en modo edición (read-only)
+
+VALIDACIONES:
+  - Formateo automático de cédula (#-####-####)
+  - Formateo automático de teléfono (####-####)
+  - Validación de cédula duplicada vía API
+  - Los correos institucional y personal deben ser diferentes
+  - En edición: datos del encargado son solo lectura
+
+BOTONES:
+  - "Cancelar" → regresa a la lista
+  - "Guardar" (modo nuevo) / "Actualizar" (modo editar) → envía el formulario
+
+--------------------------------------------------------------------------------
+2.6 VISTA ENCARGADOS (VistaEncargado.jsx)
+--------------------------------------------------------------------------------
+Propósito: Lista y gestión de encargados
+
+MODOS:
+  - "lista"  → muestra tarjetas de encargados
+  - "editar" → muestra FormularioEncargado
+  (No hay modo "nuevo" — los encargados se crean desde el formulario de estudiante)
+
+FILTROS:
+  - Búsqueda por nombre (input text)
+  - Estado: [Activos] [Inactivos] [Todos]
+
+INFORMACIÓN MOSTRADA POR TARJETA:
+  - Nombre del encargado
+  - Correo
+  - Teléfono
+  - Estado (activo/inactivo)
+
+BOTONES POR TARJETA:
+  - Ver (ojo)      → abre Modal con DetalleEncargado
+  - Editar (lápiz) → cambia a modo "editar"
+  - Eliminar (basura) → abre Modal de confirmación
+
+NOTA: No existe creación directa de encargados desde esta vista.
+      Los encargados se crean automáticamente al crear un estudiante.
+
+--------------------------------------------------------------------------------
+2.7 FORMULARIO ENCARGADO (FormularioEncargado.jsx)
+--------------------------------------------------------------------------------
+Propósito: Editar datos de un encargado existente
+
+CAMPOS:
+  - Nombre (text, requerido)
+  - Correo (email, requerido)
+  - Teléfono (formato ####-####, requerido)
+
+VALIDACIONES:
+  - Email debe ser válido (formato regex)
+  - Teléfono debe tener 8 dígitos completos
+
+BOTONES:
+  - "Cancelar" → regresa a la lista
+  - "Actualizar" → envía el formulario
+
+--------------------------------------------------------------------------------
+2.8 VISTA PROFESORES (VistaProfesores.jsx)
+--------------------------------------------------------------------------------
+Propósito: Lista y gestión completa de profesores
+
+MODOS:
+  - "lista"  → muestra tarjetas de profesores
+  - "nuevo"  → muestra FormularioProfesor en modo creación
+  - "editar" → muestra FormularioProfesor en modo edición
+
+FILTROS:
+  - Búsqueda por nombre o cédula (input text)
+  - Estado: [Activos] [Inactivos]
+
+INFORMACIÓN MOSTRADA POR TARJETA:
+  - Nombre del profesor
+  - Cédula
+  - Correo
+  - Teléfono
+  - Estado (activo / inactivo) con badge de color
+
+BOTONES POR TARJETA:
+  - Ver (ojo)         → abre Modal con DetalleProfesor
+  - Editar (lápiz)    → cambia a modo "editar"
+  - Eliminar (basura) → abre Modal de confirmación
+
+BOTONES PRINCIPALES:
+  - "+ Nuevo Profesor" → cambia a modo "nuevo"
+
+--------------------------------------------------------------------------------
+2.9 FORMULARIO PROFESOR (FormularioProfesor.jsx)
+--------------------------------------------------------------------------------
+Propósito: Crear o editar un profesor
+
+CAMPOS:
+  - Cédula (formato #-####-####, requerido)
+      * Deshabilitado en modo edición
+      * Verifica duplicados en tiempo real
+  - Nombre (text, requerido)
+  - Correo (email, requerido)
+  - Teléfono (text, opcional)
+  - Activo (checkbox, por defecto true)
+
+BOTONES:
+  - "Cancelar" → regresa a la lista
+  - "Guardar" / "Actualizar"
+
+--------------------------------------------------------------------------------
+2.10 VISTA CURSOS (VistaCursos.jsx)
+--------------------------------------------------------------------------------
+Propósito: Lista y gestión de cursos
+
+MODOS:
+  - "lista"  → muestra tarjetas de cursos
+  - "nuevo"  → muestra FormularioCurso en modo creación
+  - "editar" → muestra FormularioCurso en modo edición
+
+FILTROS:
+  - Búsqueda por nombre (input text)
+  - Estado: [Activos] [Inactivos]
+
+INFORMACIÓN MOSTRADA POR TARJETA:
+  - Nombre del curso
+  - Nivel/Grado
+  - Horario
+  - Nombre del Profesor asignado
+  - Estado (activo/inactivo)
+
+BOTONES POR TARJETA:
+  - Ver (ojo)         → abre Modal con DetalleCurso
+  - Editar (lápiz)    → cambia a modo "editar"
+  - Eliminar (basura) → abre Modal de confirmación
+
+BOTONES PRINCIPALES:
+  - "+ Nuevo Curso" → cambia a modo "nuevo"
+
+--------------------------------------------------------------------------------
+2.11 FORMULARIO CURSO (FormularioCurso.jsx)
+--------------------------------------------------------------------------------
+Propósito: Crear o editar un curso
+
+CAMPOS:
+  - Nombre del Curso (text, requerido)
+  - Nivel/Grado (text, requerido)
+  - Horario (text, requerido, ej: "Lunes 8:00-9:40")
+  - Profesor (select de profesores activos, requerido)
+  - Nota (número decimal, opcional)
+  - Estado (select: activo/inactivo, solo aparece en modo edición)
+
+BOTONES:
+  - "Cancelar" → regresa a la lista
+  - "Guardar" / "Actualizar"
+
+--------------------------------------------------------------------------------
+2.12 VISTA ACTIVOS (VistaActivos.jsx)
+--------------------------------------------------------------------------------
+Propósito: Lista y gestión de activos institucionales + préstamos
+
+MODOS:
+  - "lista"  → muestra tarjetas de activos
+  - "nuevo"  → muestra FormularioActivo en modo creación
+  - "editar" → muestra FormularioActivo en modo edición
+
+FILTROS:
+  - Búsqueda por nombre o tipo (input text)
+  - Estado: [Disponibles] [Prestados] [Mantenimiento]
+  - Tipo: [Computadora] [Tablet] [Libro] [Proyector] [Otro]
+
+INFORMACIÓN MOSTRADA POR TARJETA:
+  - Nombre del activo
+  - Tipo (badge con color según tipo)
+  - Estado (badge: disponible=verde, prestado=naranja, mantenimiento=rojo)
+  - Si está prestado:
+      * Nombre del estudiante que lo tiene
+      * Fecha de retorno esperada
+
+BOTONES POR TARJETA:
+  - Ver (ojo)         → abre Modal con DetalleActivo
+  - Editar (lápiz)    → cambia a modo "editar"
+  - Prestar           → abre Modal de préstamo (solo si estado = disponible)
+  - Eliminar (basura) → abre Modal de confirmación
+
+BOTONES PRINCIPALES:
+  - "+ Nuevo Activo"  → cambia a modo "nuevo"
+  - "Importar CSV"    → abre Modal ImportarActivosCSV
+
+--------------------------------------------------------------------------------
+2.13 FORMULARIO ACTIVO (FormularioActivo.jsx)
+--------------------------------------------------------------------------------
+Propósito: Crear o editar un activo
+
+CAMPOS:
+  - Tipo (select requerido):
+      * computadora
+      * tablet
+      * libro
+      * proyector
+      * otro
+  - Nombre / Descripción (text, requerido)
+  - Identificador (text, opcional — modelo, número de serie, etc.)
+  - Estado (select, solo aparece en modo edición):
+      * disponible
+      * prestado
+      * en_mantenimiento
+
+BOTONES:
+  - "Cancelar" → regresa a la lista
+  - "Guardar" / "Actualizar"
+
+--------------------------------------------------------------------------------
+2.14 VISTA PRÉSTAMOS (VistaPrestamos.jsx)
+--------------------------------------------------------------------------------
+Propósito: Gestión de préstamos y devoluciones de activos
+
+FILTROS:
+  - Búsqueda por activo, estudiante o cédula (input text)
+  - Estado: [Activos] [Devueltos] [Todos]
+
+TABLA DE PRÉSTAMOS — COLUMNAS:
+  - Activo (nombre del activo)
+  - Tipo (tipo del activo)
+  - Estudiante (nombre)
+  - Cédula (del estudiante)
+  - Fecha Préstamo
+  - Retorno Esperado
+  - Retorno Real
+  - Estado (activo / devuelto)
+  - Acciones:
+      * Botón "Devolver" → abre Modal de devolución (solo si estado = activo)
+
+BOTONES PRINCIPALES:
+  - "+ Nuevo Préstamo" → abre Modal de FormularioPrestamo
+
+MODALES:
+  - Modal Nuevo Préstamo (FormularioPrestamo)
+  - Modal Registrar Devolución (con campo de fecha retorno real)
+
+--------------------------------------------------------------------------------
+2.15 FORMULARIO PRÉSTAMO (FormularioPrestamo.jsx)
+--------------------------------------------------------------------------------
+Propósito: Registrar un nuevo préstamo de activo a estudiante
+
+CAMPOS:
+  - Activo (select — solo muestra activos con estado "disponible", requerido)
+  - Estudiante (select con búsqueda por nombre o cédula, requerido)
+  - Fecha Préstamo (date, por defecto = fecha de hoy, requerido)
+  - Fecha Retorno Esperada (date, requerido, debe ser posterior a fecha préstamo)
+
+VALIDACIONES:
+  - El activo debe estar en estado "disponible"
+  - Fecha de retorno debe ser mayor a fecha de préstamo
+
+BOTONES:
+  - "Cancelar"
+  - "Registrar Préstamo"
+
+--------------------------------------------------------------------------------
+2.16 VISTA COMUNICACIONES (VistaComunicacion.jsx)
+--------------------------------------------------------------------------------
+Propósito: Envío de correos masivos a estudiantes/encargados con adjuntos
+
+SECCIONES:
+  A) Estadísticas:
+     - Total de comunicaciones realizadas
+     - Total de correos enviados
+     - Fecha de la última comunicación
+
+  B) Formulario de Envío:
+     - Asunto (text, requerido)
+     - Mensaje (textarea, requerido)
+     - Tipo de Correo (select: institucional / personal)
+     - Segmento (select):
+         * todos
+         * estudiantes
+         * encargados
+     - Grado del Estudiante (select, solo visible si segmento = "estudiantes"):
+         * cuartos
+         * quintos
+         * todos
+     - Tipo Email Estudiante (select, visible si segmento incluye estudiantes):
+         * institucional
+         * personal
+         * ambos
+     - Adjuntos (zona drag & drop):
+         * Formatos permitidos: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG, GIF
+         * Muestra preview de archivos seleccionados
+
+  C) Historial de Comunicaciones Enviadas (lista/tabla)
+
+BOTONES:
+  - "Enviar Comunicación" (submit del formulario)
+  - Botón para remover archivos del listado de adjuntos
+
+PROCESO:
+  1. Carga automática de estudiantes activos
+  2. Filtra destinatarios según segmento y grado seleccionados
+  3. Muestra conteo de destinatarios antes de enviar
+  4. Llama a enviarCorreo(payload, archivos, token) con FormData multipart
+
+
+================================================================================
+3. COMPONENTES UI (src/componentes/ui/)
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1 CampoTexto.jsx
+--------------------------------------------------------------------------------
+Props: etiqueta, tipo, placeholder, value, onChange, disabled
+Render: label + input con estilos del sistema
+
+--------------------------------------------------------------------------------
+3.2 BotonPrincipal.jsx
+--------------------------------------------------------------------------------
+Props: variante (primario / secundario), onClick, disabled, children, tipo
+Render: button con estilos según variante
+
+--------------------------------------------------------------------------------
+3.3 Modal.jsx
+--------------------------------------------------------------------------------
+Props: isOpen, onClose, title, size (wide / normal), children
+Render: overlay modal con header, contenido y botón de cierre
+
+--------------------------------------------------------------------------------
+3.4 DetalleEstudiante.jsx
+--------------------------------------------------------------------------------
+Muestra:
+  - Información completa del estudiante (todos sus campos)
+  - Datos del encargado asociado
+  - Información de contacto
+  - Historial de préstamos activos y pasados (si existen)
+
+--------------------------------------------------------------------------------
+3.5 DetalleActivo.jsx
+--------------------------------------------------------------------------------
+Muestra:
+  - Tipo, nombre, identificador del activo
+  - Estado actual
+  - Historial completo de préstamos (con estudiante y fechas)
+
+--------------------------------------------------------------------------------
+3.6 DetalleCurso.jsx
+--------------------------------------------------------------------------------
+Muestra:
+  - Nombre del curso, nivel, horario
+  - Profesor asignado (nombre)
+  - Nota del curso (si aplica)
+  - Estado
+
+--------------------------------------------------------------------------------
+3.7 DetalleEncargado.jsx
+--------------------------------------------------------------------------------
+Muestra:
+  - Nombre, correo, teléfono del encargado
+  - Lista de estudiantes asociados a este encargado
+
+--------------------------------------------------------------------------------
+3.8 DetalleProfesor.jsx
+--------------------------------------------------------------------------------
+Muestra:
+  - Nombre, cédula, correo, teléfono
+  - Cursos que imparte
+
+--------------------------------------------------------------------------------
+3.9 ImportarEstudiantesCSV.jsx
+--------------------------------------------------------------------------------
+Funcionalidad:
+  - Carga de archivo CSV desde el sistema de archivos
+  - Validación de estructura del CSV
+  - Upload masivo vía uploadEstudiantesCSV(estudiantes)
+  - Reporte de resultados: éxitos y errores por fila
+  Campos CSV esperados:
+    cedula, nombre, correo_institucional, correo_personal,
+    telefono, grado, colegio_procedencia, direccion_domicilio,
+    encargado_nombre, encargado_correo, encargado_telefono
+
+--------------------------------------------------------------------------------
+3.10 ImportarActivosCSV.jsx
+--------------------------------------------------------------------------------
+Funcionalidad:
+  - Carga de archivo CSV desde el sistema de archivos
+  - Validación de estructura
+  - Upload masivo vía uploadActivosCSV(datos)
+  - Reporte de resultados: éxitos y errores por fila
+  Campos CSV esperados:
+    tipo, nombre, estado, identificador
+
+--------------------------------------------------------------------------------
+3.11 AutocompleteColegios.jsx
+--------------------------------------------------------------------------------
+Props: valor, onChange
+Datos: Lista de colegios de Costa Rica (archivo colegiosData.js)
+Funcionalidad: input con autocomplete y filtrado de resultados
+
+--------------------------------------------------------------------------------
+3.12 Siderbar.jsx (Menú lateral)
+--------------------------------------------------------------------------------
+OPCIONES DEL MENÚ (en orden):
+  1. Panel Principal    → /home
+  2. Estudiantes        → /estudiantes
+  3. Encargados         → /encargados
+  4. Profesores         → /profesores
+  5. Cursos             → /cursos
+  6. Comunicaciones     → /comunicaciones
+  7. Activos            → /activos
+  8. Préstamos          → /prestamos
+
+SECCIONES DEL SIDEBAR:
+  - Logo + título "EduCRM"
+  - Subtítulo "CCSP - Puntarenas"
+  - Navegación (items clickeables con ícono + texto)
+  - Sistema: Información de institución
+  - Usuario: Avatar + nombre + correo (del localStorage)
+  - Botón "Cerrar Sesión"
+
+
+================================================================================
+4. RUTAS FRONTEND (src/App.js)
+================================================================================
+
+NOTA: No usa React Router. Navegación por estado interno de la app.
+
+  /auth/login        → <Login />
+  /auth/register     → <Registro />
+  /home              → <Home />
+  /estudiantes       → <VistaEstudiante />
+  /encargados        → <VistaEncargado />
+  /profesores        → <VistaProfesores />
+  /cursos            → <VistaCursos />
+  /comunicaciones    → <VistaComunicacion />
+  /activos           → <VistaActivos />
+  /prestamos         → <VistaPrestamos />
+
+URL BASE DEL API:
+  process.env.REACT_APP_API_BASE_URL = http://localhost:8000/api
+
+
+================================================================================
+5. API / ENDPOINTS FRONTEND (src/api/)
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1 auth.js — Autenticación
+--------------------------------------------------------------------------------
+
+POST /api/auth/register/
+  Payload: { username, email, password, first_name, last_name }
+  Retorna: { token, user }
+
+POST /api/auth/login/
+  Payload: { username, password }
+  Retorna: { token, user }
+
+POST /api/auth/logout/
+  Retorna: { detail }
+
+Funciones exportadas:
+  register(userData)      - registra nuevo usuario
+  login(username, password) - inicia sesión, guarda token
+  logout()                - cierra sesión, limpia localStorage
+  isAuthenticated()       - verifica si existe authToken en localStorage
+  getCurrentUser()        - parsea "user" desde localStorage
+  getAuthToken()          - devuelve el token almacenado
+
+--------------------------------------------------------------------------------
+5.2 estudiantes.js
+--------------------------------------------------------------------------------
+
+GET  /api/estudiantes/?estado=activos|inactivos|todos
+POST /api/estudiantes/
+  Payload: {
+    cedula, nombre, correo_institucional, correo_personal,
+    telefono, colegio_procedencia, grado, direccion_domicilio,
+    encargado: { nombre, correo, telefono }
+  }
+PATCH  /api/estudiantes/{id}/
+  Payload: campos a actualizar (sin encargado en edición)
+DELETE /api/estudiantes/{id}/
+GET    /api/estudiantes/historial/
+GET    /api/estudiantes/dashboard-stats/
+POST   /api/estudiantes/upload-bulk/
+  Payload: Array de estudiantes
+
+Funciones exportadas:
+  getEstudiantes(estado)
+  createEstudiante(formData)
+  updateEstudiante(id, payload)
+  deleteEstudiante(id)
+  verificarCedulaExistente(cedula, excludeId)
+  getHistorialAcciones()
+  uploadEstudiantesCSV(estudiantes)
+
+--------------------------------------------------------------------------------
+5.3 encargados.js
+--------------------------------------------------------------------------------
+
+GET    /api/encargados/?estado=activos|inactivos|todos
+POST   /api/encargados/
+  Payload: { nombre, correo, telefono }
+PATCH  /api/encargados/{id}/
+  Payload: { nombre, correo, telefono }
+DELETE /api/encargados/{id}/
+
+Funciones exportadas:
+  getEncargados(estado)
+  createEncargado(data)
+  updateEncargado(id, data)
+  deleteEncargado(id)
+
+--------------------------------------------------------------------------------
+5.4 profesores.js
+--------------------------------------------------------------------------------
+
+GET    /api/profesores/?estado=activos|inactivos
+POST   /api/profesores/
+  Payload: { cedula, nombre, correo, telefono, activo }
+PATCH  /api/profesores/{id}/
+  Payload: { cedula, nombre, correo, telefono, activo }
+DELETE /api/profesores/{id}/
+
+Funciones exportadas:
+  obtenerProfesores(estado)
+  crearProfesor(formData)
+  actualizarProfesor(id, payload)
+  eliminarProfesor(id)
+  verificarCedulaProfesorExistente(cedula, excludeId)
+
+--------------------------------------------------------------------------------
+5.5 cursos.js
+--------------------------------------------------------------------------------
+
+GET    /api/cursos/?estado=activos|inactivos|todos
+POST   /api/cursos/
+  Payload: { nombre, nivel_grado, horario, estado, id_profesor, nota }
+PATCH  /api/cursos/{id}/
+  Payload: { nombre, nivel_grado, horario, estado, id_profesor, nota }
+DELETE /api/cursos/{id}/
+
+Funciones exportadas:
+  obtenerCursos(estado)
+  crearCurso(formData)
+  actualizarCurso(id, payload)
+  eliminarCurso(id)
+
+--------------------------------------------------------------------------------
+5.6 activos.js
+--------------------------------------------------------------------------------
+
+GET    /api/activos/?busqueda=&estado=&tipo=
+GET    /api/activos/{id}/
+POST   /api/activos/
+  Payload: { tipo, nombre, identificador, estado }
+PATCH  /api/activos/{id}/
+  Payload: { tipo, nombre, identificador, estado }
+DELETE /api/activos/{id}/
+POST   /api/activos/upload-bulk/
+  Payload: Array de activos
+
+Funciones exportadas:
+  obtenerActivos({ busqueda, estado, tipo })
+  crearActivo(formData)
+  actualizarActivo(id, payload)
+  eliminarActivo(id)
+  uploadActivosCSV(datos)
+
+--------------------------------------------------------------------------------
+5.7 prestamos.js
+--------------------------------------------------------------------------------
+
+GET    /api/prestamos/?activo=&estudiante=&estado=
+POST   /api/prestamos/
+  Payload: {
+    id_activo, id_estudiante,
+    fecha_prestamo, fecha_retorno_esperada
+  }
+PATCH  /api/prestamos/{id}/devolver/
+  Payload: { fecha_retorno_real }
+
+Funciones exportadas:
+  obtenerPrestamos({ activo, estudiante, estado })
+  crearPrestamo(formData)
+  registrarDevolucion(id, fechaRetornoReal)
+
+--------------------------------------------------------------------------------
+5.8 comunicaciones.js
+--------------------------------------------------------------------------------
+
+GET    /api/comunicaciones/correos/
+POST   /api/comunicaciones/correos/enviar/
+  Payload (FormData multipart):
+    - asunto
+    - contenido
+    - tipo_correo
+    - tipo_email_estudiante
+    - segmento
+    - estudiantes_ids (array)
+    - adjuntos (archivos binarios)
+
+Funciones exportadas:
+  getComunicaciones(token)
+  enviarCorreo(payload, archivos, token)
+
+--------------------------------------------------------------------------------
+5.9 dashboard.js
+--------------------------------------------------------------------------------
+
+GET /api/estudiantes/dashboard-stats/
+  Retorna: {
+    estudiantes_activos,
+    estudiantes_totales,
+    encargados_totales,
+    comunicaciones_enviadas,
+    correos_totales,
+    estudiantes_por_nivel: [
+      { nombre: "Cuarto Nivel", valor: N },
+      { nombre: "Quinto Nivel", valor: M }
+    ]
+  }
+
+Funciones exportadas:
+  getDashboardStats()
+
+--------------------------------------------------------------------------------
+5.10 client.js — Utilidades HTTP base
+--------------------------------------------------------------------------------
+
+Funciones:
+  apiGet(path, { params })   - GET request con token
+  apiDelete(path)            - DELETE request con token
+  apiPatch(path, body)       - PATCH request con token
+  (apiPost usado internamente)
+
+Configuración:
+  - Agrega header Authorization: Token {authToken}
+  - Base URL: REACT_APP_API_BASE_URL
+
+
+================================================================================
+6. BACKEND DJANGO — MODELOS (models.py)
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1 App: estudiantes
+--------------------------------------------------------------------------------
+
+MODELO: Encargado
+  id_encargado        AutoField (PK)
+  nombre              CharField (max_length=150)
+  correo              EmailField (max_length=150, unique=True)
+  telefono            CharField (max_length=20)
+  activo              BooleanField (default=True)
+
+MODELO: Estudiante
+  id_estudiante       AutoField (PK)
+  cedula              CharField (max_length=20, unique=True)
+  nombre              CharField (max_length=150)
+  correo_institucional EmailField (max_length=150)
+  correo_personal     EmailField (blank=True, null=True)
+  telefono            CharField (blank=True, null=True)
+  colegio_procedencia CharField (max_length=200, blank=True, null=True)
+  grado               CharField (max_length=50)   → "Cuarto Nivel" / "Quinto Nivel"
+  direccion_domicilio CharField (max_length=255, blank=True, null=True)
+  activo              BooleanField (default=True)
+  id_encargado        ForeignKey → Encargado (PROTECT)
+
+MODELO: HistorialAccion
+  id                  PK
+  usuario             CharField (max_length=100)
+  tipo_accion         CharField (max_length=50)
+    CHOICES:
+      'crear_estudiante'
+      'editar_estudiante'
+      'eliminar_estudiante'
+      'crear_encargado'
+      'editar_encargado'
+      'eliminar_encargado'
+      'enviar_comunicacion'
+      'eliminar_comunicacion'
+  descripcion         CharField (max_length=255)
+  detalles            TextField (blank=True, null=True)
+  fecha_hora          DateTimeField (auto_now_add=True)
+
+--------------------------------------------------------------------------------
+6.2 App: profesores
+--------------------------------------------------------------------------------
+
+MODELO: Profesor
+  id_profesor         AutoField (PK)
+  cedula              CharField (max_length=20, unique=True)
+  nombre              CharField (max_length=150)
+  correo              EmailField (max_length=150, unique=True)
+  telefono            CharField (max_length=20, blank=True, null=True)
+  activo              BooleanField (default=True)
+
+--------------------------------------------------------------------------------
+6.3 App: cursos
+--------------------------------------------------------------------------------
+
+MODELO: Curso
+  id_curso            AutoField (PK)
+  nombre              CharField (max_length=150)
+  nivel_grado         CharField (max_length=20)   → "Cuarto" / "Quinto"
+  horario             CharField (max_length=100)  → ej: "Lunes 8:00-9:40"
+  nota                DecimalField (max_digits=3, decimal_places=1, blank=True, null=True)
+  estado              CharField (max_length=20)
+    CHOICES: 'activo' / 'inactivo'
+    default: 'activo'
+  id_profesor         ForeignKey → Profesor (PROTECT)
+  fecha_creacion      DateTimeField (auto_now_add=True)
+  fecha_actualizacion DateTimeField (auto_now=True)
+
+--------------------------------------------------------------------------------
+6.4 App: activos
+--------------------------------------------------------------------------------
+
+MODELO: Activo
+  id_activo           AutoField (PK)
+  tipo                CharField (max_length=50)
+    CHOICES:
+      'computadora'
+      'tablet'
+      'libro'
+      'proyector'
+      'otro'
+  nombre              CharField (max_length=200)
+  identificador       CharField (max_length=200, blank=True, null=True)  → serie, modelo, etc.
+  estado              CharField (max_length=30)
+    CHOICES:
+      'disponible'
+      'prestado'
+      'en_mantenimiento'
+    default: 'disponible'
+  fecha_creacion      DateTimeField (auto_now_add=True)
+  fecha_actualizacion DateTimeField (auto_now=True)
+
+MODELO: Prestamo
+  id_prestamo             AutoField (PK)
+  id_activo               ForeignKey → Activo (PROTECT)
+  id_estudiante           ForeignKey → Estudiante (PROTECT)
+  fecha_prestamo          DateField
+  fecha_retorno_esperada  DateField
+  fecha_retorno_real      DateField (null=True, blank=True)
+  estado_prestamo         CharField (max_length=20)
+    CHOICES: 'activo' / 'devuelto'
+    default: 'activo'
+  fecha_creacion          DateTimeField (auto_now_add=True)
+  fecha_actualizacion     DateTimeField (auto_now=True)
+
+--------------------------------------------------------------------------------
+6.5 App: comunicaciones
+--------------------------------------------------------------------------------
+
+MODELO: Correo
+  id_correo           AutoField (PK)
+  asunto              CharField (max_length=150)
+  contenido           TextField (NVARCHAR(MAX))
+  fecha_envio         DateTimeField (default=timezone.now)
+  tipo_correo         CharField (max_length=50, blank=True, null=True)
+  segmento            CharField (max_length=20, blank=True, null=True)
+    VALORES: 'estudiantes' / 'encargados' / 'todos'
+  total_enviados      IntegerField (default=0)
+  id_usuario          ForeignKey → User (SET_NULL, null=True, blank=True)
+  estudiantes         ManyToManyField → Estudiante (through CorreoEstudiante)
+
+MODELO: CorreoEstudiante (tabla intermedia M2M)
+  id_correo           ForeignKey → Correo (CASCADE)
+  id_estudiante       ForeignKey → Estudiante (CASCADE)
+  unique_together: (id_correo, id_estudiante)
+
+MODELO: Adjunto
+  id_adjunto          AutoField (PK)
+  id_correo           ForeignKey → Correo (CASCADE)
+  archivo             FileField (upload_to='comunicaciones/%Y/%m/%d/')
+  nombre_original     CharField (max_length=255)
+  tipo_archivo        CharField (max_length=50)   → 'pdf', 'doc', 'img', etc.
+  fecha_subida        DateTimeField (default=timezone.now)
+
+
+================================================================================
+7. BACKEND DJANGO — ENDPOINTS COMPLETOS (urls.py)
+================================================================================
+
+AUTENTICACIÓN:
+  POST   /api/auth/register/                     → register_view
+  POST   /api/auth/login/                        → login_view
+  POST   /api/auth/logout/                       → logout_view
+
+ESTUDIANTES:
+  GET    /api/estudiantes/                       → list (filtro: ?estado=)
+  GET    /api/estudiantes/{id}/                  → retrieve
+  POST   /api/estudiantes/                       → create
+  PATCH  /api/estudiantes/{id}/                  → partial_update
+  DELETE /api/estudiantes/{id}/                  → destroy (soft delete)
+  GET    /api/estudiantes/historial/             → accion historial
+  GET    /api/estudiantes/dashboard-stats/       → accion dashboard
+  POST   /api/estudiantes/upload-bulk/           → accion upload masivo
+
+ENCARGADOS:
+  GET    /api/encargados/                        → list (filtro: ?estado=)
+  GET    /api/encargados/{id}/                   → retrieve
+  POST   /api/encargados/                        → create
+  PATCH  /api/encargados/{id}/                   → partial_update
+  DELETE /api/encargados/{id}/                   → destroy (soft delete)
+
+PROFESORES:
+  GET    /api/profesores/                        → list (filtro: ?estado=)
+  GET    /api/profesores/{id}/                   → retrieve
+  POST   /api/profesores/                        → create
+  PATCH  /api/profesores/{id}/                   → partial_update
+  DELETE /api/profesores/{id}/                   → destroy (soft delete)
+
+CURSOS:
+  GET    /api/cursos/                            → list (filtro: ?estado=)
+  GET    /api/cursos/{id}/                       → retrieve
+  POST   /api/cursos/                            → create
+  PATCH  /api/cursos/{id}/                       → partial_update
+  DELETE /api/cursos/{id}/                       → destroy
+
+ACTIVOS:
+  GET    /api/activos/                           → list (filtros: ?busqueda=&estado=&tipo=)
+  GET    /api/activos/{id}/                      → retrieve
+  POST   /api/activos/                           → create
+  PATCH  /api/activos/{id}/                      → partial_update
+  DELETE /api/activos/{id}/                      → destroy (valida préstamos activos)
+  POST   /api/activos/upload-bulk/               → accion upload masivo
+
+PRÉSTAMOS:
+  GET    /api/prestamos/                         → list (filtros: ?activo=&estudiante=&estado=)
+  POST   /api/prestamos/                         → create (cambia estado activo a "prestado")
+  PATCH  /api/prestamos/{id}/devolver/           → accion devolver (registra fecha retorno real)
+
+COMUNICACIONES:
+  GET    /api/comunicaciones/correos/            → lista todos los correos enviados
+  POST   /api/comunicaciones/correos/enviar/     → enviar correo masivo (FormData multipart)
+
+
+================================================================================
+8. BACKEND DJANGO — VISTAS / VIEWSETS (views.py)
+================================================================================
+
+EstudianteViewSet:
+  - Filtro de queryset por: estado (activos|inactivos|todos)
+  - create()        → guarda registro en HistorialAccion
+  - update()        → guarda historial + reactiva encargado si corresponde
+  - destroy()       → soft delete (activo=False)
+  - historial()     → custom action, retorna HistorialAccion[]
+  - dashboard_stats() → custom action, retorna estadísticas
+  - upload_bulk()   → custom action, carga masiva con transacciones atómicas
+
+EncargadoViewSet:
+  - Filtro por: estado (activos|inactivos|todos)
+  - destroy() → soft delete (activo=False)
+
+ProfesorViewSet:
+  - Filtro por: estado (activos|inactivos|todos)
+  - destroy() → soft delete (activo=False)
+
+CursoViewSet:
+  - Filtro por: estado (activos|inactivos|todos), año (opcional)
+  - destroy() → marca como inactivo primero, luego elimina
+
+ActivoViewSet:
+  - Filtro por: busqueda (nombre|tipo), estado, tipo
+  - prefetch_related: prestamos__id_estudiante
+  - destroy() → valida que no haya préstamos activos antes de eliminar
+  - upload_bulk() → custom action, carga masiva con manejo de errores individuales
+
+PrestamoViewSet:
+  - Filtro por: activo, estudiante, estado
+  - create()    → además actualiza estado del activo a 'prestado'
+  - devolver()  → custom action PATCH, registra devolución y cambia activo a 'disponible'
+
+CorreoListAPIView:
+  - GET ordenado por fecha_envio descendente
+
+EnviarCorreoView:
+  - POST con multipart/form-data
+  - Crea: Correo → CorreoEstudiante(s) → Adjunto(s)
+  - Envía por SMTP según configuración de email
+
+
+================================================================================
+9. BACKEND DJANGO — SERIALIZERS (serializers.py)
+================================================================================
+
+EstudianteSerializer:
+  Fields: id_estudiante, cedula, nombre, correo_institucional, correo_personal,
+          telefono, colegio_procedencia, grado, direccion_domicilio, activo, encargado
+  create(): usa get_or_create para Encargado por correo
+  update(): actualiza datos del encargado existente (no crea nuevos)
+  Validaciones: correos distintos, teléfono único, teléfono diferente al del estudiante
+
+EncargadoSerializer:
+  Fields: id_encargado, nombre, correo, telefono, activo
+  Sin validación de unique en correo (se maneja en EstudianteSerializer)
+
+ProfesorSerializer:
+  Fields: id_profesor, cedula, nombre, correo, telefono, activo
+  Validaciones: cedula/nombre/correo obligatorios, teléfono solo dígitos
+
+CursoSerializer:
+  Fields: id_curso, nombre, nivel_grado, horario, nota, estado, id_profesor, profesor_nombre (read_only)
+  Validaciones: nombre, nivel_grado y horario obligatorios
+
+ActivoSerializer:
+  Fields: id_activo, tipo, nombre, identificador, estado, fecha_creacion,
+          fecha_actualizacion, prestamo_activo (read_only computed)
+  get_prestamo_activo(): retorna info del préstamo activo si existe
+  Validaciones: nombre obligatorio, no cambiar a "en_mantenimiento" con préstamo activo
+
+PrestamoSerializer:
+  Fields: id_prestamo, id_activo, activo_nombre, activo_tipo, id_estudiante,
+          estudiante_nombre, estudiante_cedula, fecha_prestamo,
+          fecha_retorno_esperada, fecha_retorno_real, estado_prestamo
+  Validaciones: activo debe estar disponible, fecha_retorno > fecha_prestamo
+  create(): actualiza estado del activo a 'prestado'
+
+CorreoSerializer:
+  Fields: id_correo, asunto, mensaje (alias de contenido), fecha (alias de fecha_envio),
+          tipo_correo, segmento, estudiantes_ids, adjuntos, estado (read_only), enviados
+  Mapeos: mensaje ← contenido / fecha ← fecha_envio
+
+EnviarCorreoSerializer:
+  Fields: asunto, contenido, tipo_correo, tipo_email_estudiante,
+          segmento, estudiantes_ids (opcional), adjuntos (opcional)
+  create(): crea Correo + CorreoEstudiante(s) + Adjunto(s)
+
+
+================================================================================
+10. AUTENTICACIÓN / LOGIN — DETALLE COMPLETO
+================================================================================
+
+FRONTEND — Proceso de Login:
+  1. Usuario ingresa: correo/usuario + contraseña
+  2. Valida que ambos campos estén llenos
+  3. Llama a login(username, password)
+  4. Backend autentica y retorna { token, user }
+  5. Frontend guarda en localStorage:
+       "authToken" → string del token
+       "user"      → JSON.stringify(user)
+  6. Redirecciona al Home
+
+VERIFICACIÓN DE SESIÓN:
+  isAuthenticated()  → retorna true si existe "authToken" en localStorage
+  getCurrentUser()   → parsea JSON del "user" en localStorage
+  getAuthToken()     → devuelve el string del token
+
+BACKEND — Endpoints de autenticación:
+
+  POST /api/auth/register/
+    Payload:
+      { username, email, password, first_name, last_name }
+    Validaciones:
+      - username, email, password requeridos
+      - password mínimo 6 caracteres
+      - username no duplicado
+      - email no duplicado
+    Response 201:
+      { token, user: { id, username, email, first_name, last_name, is_staff, is_superuser } }
+
+  POST /api/auth/login/
+    Payload:
+      { username, password }
+    Response 200:
+      { token, user }
+    Errors:
+      400 → faltan campos
+      401 → credenciales incorrectas o usuario inactivo
+
+  POST /api/auth/logout/
+    Response 200:
+      { detail: "Sesión cerrada exitosamente" }
+
+  Implementación de Token:
+    - Usa rest_framework.authtoken.models.Token de Django REST Framework
+    - El token se crea automáticamente al registrar el usuario
+    - Se obtiene o crea al hacer login (get_or_create)
+    - Se envía en cada request: Authorization: Token {token}
+
+
+================================================================================
+11. DEPENDENCIAS DEL PROYECTO
+================================================================================
+
+FRONTEND (package.json):
+  react                   ^19.2.0     → librería principal UI
+  react-dom               ^19.2.0     → renderizado React
+  react-scripts           5.0.1       → create-react-app toolchain
+  recharts                ^3.3.0      → gráficos (PieChart en Dashboard)
+  papaparse               ^5.5.3      → parseo de archivos CSV
+  xlsx                    ^0.18.5     → lectura/escritura de Excel
+  web-vitals              ^2.1.4      → métricas de rendimiento
+  @testing-library/dom    ^10.4.1     → testing utils
+  @testing-library/jest-dom ^6.9.1   → matchers para Jest
+  @testing-library/react  ^16.3.0    → testing de componentes React
+  @testing-library/user-event ^13.5.0 → simulación de eventos en tests
+
+BACKEND (requirements.txt):
+  Django                  >=4.2,<6.0  → framework principal
+  djangorestframework     3.16.1      → API REST
+  django-cors-headers     4.9.0       → manejo de CORS
+  mssql-django            1.6         → soporte SQL Server
+  pyodbc                  5.3.0       → driver ODBC para SQL Server
+  python-decouple         3.8         → lectura de variables de entorno
+  asgiref                 3.11.0      → soporte ASGI
+  pytz                                → zonas horarias
+  sqlparse                0.5.3       → parsing SQL
+  tzdata                              → datos de zonas horarias
+
+
+================================================================================
+12. VARIABLES DE ENTORNO
+================================================================================
+
+BACKEND (.env.local — configuración actual):
+  SECRET_KEY=django-insecure-bz7dolfy...
+  DEBUG=True
+  ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+  DB_ENGINE=mssql
+  DB_NAME=EduBackCRM
+  DB_USER=sa
+  DB_PASSWORD=Todopoderoso420.
+  DB_HOST=localhost\SQLEXPRESS
+  DB_PORT=(vacío)
+  DB_DRIVER=ODBC Driver 17 for SQL Server
+  CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+FRONTEND + BACKEND (.env.example — plantilla):
+  REACT_APP_API_BASE_URL=http://localhost:8000/api
+  SECRET_KEY=your-django-secret-key-here-generate-new-one
+  DEBUG=True
+  ALLOWED_HOSTS=localhost,127.0.0.1
+  DB_ENGINE=mssql
+  DB_NAME=BackEduCRM
+  DB_USER=sa
+  DB_PASSWORD=1234
+  DB_HOST=PCMELVIN\SQLEXPRESS01
+  DB_PORT=(vacío)
+  DB_DRIVER=ODBC Driver 17 for SQL Server
+  EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+  EMAIL_HOST=smtp.gmail.com
+  EMAIL_PORT=587
+  EMAIL_USE_TLS=True
+  EMAIL_HOST_USER=ingieneriaproyecto0@gmail.com
+  EMAIL_HOST_PASSWORD=wbtegkhabpdgdigk
+  CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,
+                        http://localhost:5173,http://127.0.0.1:5173
+
+
+================================================================================
+13. RESUMEN DE CAPACIDADES DEL SISTEMA
+================================================================================
+
+GESTIÓN DE DATOS:
+  [X] CRUD completo de Estudiantes con Encargados asociados
+  [X] CRUD completo de Profesores
+  [X] CRUD completo de Cursos (asignados a un Profesor)
+  [X] CRUD completo de Activos (Computadoras, Tablets, Libros, Proyectores, Otro)
+  [X] CRUD de Encargados (solo editar/eliminar desde vista propia; crear desde estudiante)
+  [X] Sistema de Préstamos de Activos a Estudiantes
+  [X] Registro de Devoluciones de Activos
+  [X] Sistema de Comunicaciones con correos masivos y adjuntos
+
+AUTENTICACIÓN:
+  [X] Registro de nuevos usuarios
+  [X] Login / Logout
+  [X] Autenticación por Token (almacenado en localStorage)
+  [X] Verificación de sesión activa en cada carga
+
+IMPORTACIÓN DE DATOS:
+  [X] Importación masiva CSV de Estudiantes (con encargados)
+  [X] Importación masiva CSV de Activos
+
+REPORTES / ESTADÍSTICAS:
+  [X] Dashboard con 4 KPIs principales
+  [X] Gráfico PieChart distribución por Nivel Académico
+  [X] Historial de acciones (crear, editar, eliminar, enviar)
+
+VALIDACIONES:
+  [X] Formato de cédula (#-####-####) con verificación de duplicados
+  [X] Formato de teléfono (####-####)
+  [X] Validación de emails (formato regex + unicidad)
+  [X] Correo institucional ≠ correo personal
+  [X] Fechas en préstamos (retorno posterior al préstamo)
+  [X] Activo debe estar disponible para prestar
+  [X] No eliminar activo con préstamo activo
+
+SOFT DELETES (desactivación en lugar de borrado físico):
+  [X] Estudiantes → campo activo=False
+  [X] Encargados  → campo activo=False
+  [X] Profesores  → campo activo=False
+  [X] Cursos      → campo estado='inactivo'
+
+BASE DE DATOS:
+  [X] Microsoft SQL Server (vía mssql-django + pyodbc)
+  [X] Relaciones FK con PROTECT (previene eliminaciones en cascada accidentales)
+  [X] Tablas intermedias: CorreoEstudiante (M2M)
+  [X] Adjuntos de correos almacenados en sistema de archivos
+
+CONFIGURACIÓN EMAIL:
+  [X] SMTP con Gmail configurado en .env.example
+  [X] Correos masivos con adjuntos (PDF, DOC, DOCX, XLS, XLSX, PNG, JPG, GIF)
+  [X] Segmentación: todos / solo estudiantes / solo encargados
+  [X] Filtro por grado (cuartos / quintos / todos)
+  [X] Selección de tipo de correo destinatario (institucional / personal / ambos)
+
+
+================================================================================
+FIN DEL INVENTARIO — EduCRM v0.1.0
+================================================================================

@@ -47,12 +47,6 @@ class CursoSerializer(serializers.ModelSerializer):
                 'horario': 'El horario es requerido.'
             })
 
-        año_lectivo = data.get('año_lectivo')
-        if año_lectivo is None or año_lectivo < 2000:
-            raise serializers.ValidationError({
-                'año_lectivo': 'El año lectivo debe ser válido.'
-            })
-
         # Limpiar los datos
         data['nombre'] = nombre
         data['nivel_grado'] = nivel_grado

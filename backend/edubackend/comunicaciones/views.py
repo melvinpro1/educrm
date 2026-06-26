@@ -151,7 +151,8 @@ from os.path import basename
 
 from .models import Correo
 from .serializers import EnviarCorreoSerializer, CorreoSerializer
-from estudiantes.models import Estudiante, Encargado   # 👈 IMPORTANTE
+from estudiantes.models import Estudiante, Encargado
+from estudiantes.views import registrar_accion
 
 
 class CorreoListAPIView(generics.ListAPIView):
@@ -249,3 +250,32 @@ class EnviarCorreoView(APIView):
             CorreoSerializer(correo_obj).data,
             status=status.HTTP_201_CREATED
         )
+
+
+class CorreoDetailDeleteView(APIView):
+    permission_classes = [AllowAny]
+
+    def get_object(self, pk):
+        try:
+            return Correo.objects.get(pk=pk)
+        except Correo.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        correo = self.get_object(pk)
+        if correo is None:
+            return Response({"detail": "Correo no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(CorreoSerializer(correo).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        correo = self.get_object(pk)
+        if correo is None:
+            return Response({"detail": "Correo no encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        asunto = correo.asunto
+        correo.delete()
+        registrar_accion(
+            usuario=str(request.user) if request.user.is_authenticated else "Sistema",
+            tipo_accion="eliminar_comunicacion",
+            descripcion=f"Eliminó comunicación: {asunto}",
+        )
+        return Response({"detail": "Comunicación eliminada correctamente."}, status=status.HTTP_200_OK)
