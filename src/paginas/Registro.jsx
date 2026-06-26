@@ -15,12 +15,10 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
   });
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [registroExitoso, setRegistroExitoso] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const manejarEnvio = async (e) => {
@@ -28,7 +26,6 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
     setError('');
     setCargando(true);
 
-    // Validaciones
     if (!formData.username || !formData.email || !formData.password || !formData.confirmarPassword) {
       setError('Por favor, complete todos los campos obligatorios');
       setCargando(false);
@@ -47,7 +44,6 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
       return;
     }
 
-    // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Por favor, ingrese un correo electrónico válido');
@@ -65,18 +61,58 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
       });
 
       if (resultado.ok) {
-        console.log('Registro exitoso:', resultado.data);
-        onRegistroExitoso();
+        setRegistroExitoso(true);
       } else {
         setError(resultado.error || 'Error al registrar usuario');
       }
     } catch (err) {
       setError('Error al conectar con el servidor');
-      console.error('Error en registro:', err);
     } finally {
       setCargando(false);
     }
   };
+
+  if (registroExitoso) {
+    return (
+      <div className="pagina-autenticacion">
+        <div className="tarjeta-autenticacion" style={{ textAlign: 'center' }}>
+          <div className="logo-autenticacion">
+            <img src={logo} alt="Logo de la aplicación" className="imagen-logo" />
+          </div>
+
+          <div style={{ fontSize: '56px', margin: '8px 0' }}>✅</div>
+          <h1 className="titulo-autenticacion">Registro exitoso</h1>
+          <p className="subtitulo-autenticacion" style={{ marginBottom: '16px' }}>
+            Su solicitud fue enviada correctamente.
+          </p>
+
+          <div
+            style={{
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '10px',
+              padding: '16px',
+              textAlign: 'left',
+              marginBottom: '24px',
+            }}
+          >
+            <p style={{ fontWeight: 700, color: '#1e40af', marginBottom: '8px' }}>
+              ¿Qué sigue?
+            </p>
+            <ul style={{ paddingLeft: '18px', color: '#374151', lineHeight: '1.8', margin: 0 }}>
+              <li>El administrador revisará su información.</li>
+              <li>Se le asignará un rol según su perfil.</li>
+              <li>Una vez aprobado, podrá iniciar sesión.</li>
+            </ul>
+          </div>
+
+          <BotonPrincipal onClick={onVolverLogin}>
+            Ir a iniciar sesión
+          </BotonPrincipal>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pagina-autenticacion">
@@ -88,11 +124,21 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
         <h1 className="titulo-autenticacion">Crear Cuenta</h1>
         <p className="subtitulo-autenticacion">Complete el formulario para registrarse</p>
 
-        {error && (
-          <div className="mensaje-error-login">
-            {error}
-          </div>
-        )}
+        <div
+          style={{
+            background: '#fef9c3',
+            border: '1px solid #fde68a',
+            borderRadius: '8px',
+            padding: '10px 14px',
+            marginBottom: '16px',
+            fontSize: '13px',
+            color: '#92400e',
+          }}
+        >
+          Su registro quedará pendiente de aprobación por el administrador.
+        </div>
+
+        {error && <div className="mensaje-error-login">{error}</div>}
 
         <form onSubmit={manejarEnvio} className="formulario-autenticacion">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -105,7 +151,6 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
               onChange={handleChange}
               disabled={cargando}
             />
-
             <CampoTexto
               etiqueta="Apellido"
               tipo="text"
@@ -164,13 +209,10 @@ function Registro({ onRegistroExitoso, onVolverLogin }) {
 
         <p className="texto-pie-autenticacion">
           ¿Ya tiene una cuenta?{' '}
-          <a 
-            href="#login" 
+          <a
+            href="#login"
             className="enlace-autenticacion"
-            onClick={(e) => {
-              e.preventDefault();
-              onVolverLogin();
-            }}
+            onClick={(e) => { e.preventDefault(); onVolverLogin(); }}
           >
             Inicie sesión aquí
           </a>

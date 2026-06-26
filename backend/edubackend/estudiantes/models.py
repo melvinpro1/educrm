@@ -1,5 +1,28 @@
 from django.db import models
+from django.contrib.auth.models import User
 from django.utils import timezone
+
+ROLES = [
+    ('admin', 'Administrador General'),
+    ('director', 'Director'),
+    ('administrador', 'Administrador'),
+    ('profesor', 'Profesor'),
+    ('encargado', 'Encargado'),
+]
+
+VISTAS_DISPONIBLES = [
+    'home', 'estudiantes', 'encargados', 'profesores', 'cursos',
+    'comunicaciones', 'activos', 'prestamos', 'usuarios', 'permisos',
+    'notas',
+]
+
+PERMISOS_DEFAULT = {
+    'admin': VISTAS_DISPONIBLES[:],
+    'director': ['home', 'estudiantes', 'encargados', 'profesores', 'cursos', 'comunicaciones', 'activos', 'prestamos', 'usuarios'],
+    'administrador': ['home', 'estudiantes', 'encargados', 'cursos', 'comunicaciones', 'activos', 'prestamos'],
+    'profesor': ['home', 'cursos', 'comunicaciones'],
+    'encargado': ['home', 'notas'],
+}
 
 # Create your models here.
 
@@ -66,3 +89,37 @@ class HistorialAccion(models.Model):
     
     def __str__(self):
         return f"{self.usuario} - {self.get_tipo_accion_display()} - {self.fecha_hora.strftime('%d/%m/%Y %H:%M')}"
+
+
+class PerfilUsuario(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
+    rol = models.CharField(max_length=20, choices=ROLES, default='profesor')
+    aprobado = models.BooleanField(default=False)
+    aprobado_por = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='aprobaciones_dadas'
+    )
+    fecha_aprobacion = models.DateTimeField(null=True, blank=True)
+    fecha_registro = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = 'Perfil de Usuario'
+        verbose_name_plural = 'Perfiles de Usuarios'
+
+    def __str__(self):
+        estado = 'Aprobado' if self.aprobado else 'Pendiente'
+        return f"{self.usuario.username} - {self.rol} - {estado}"
+
+
+class PermisoRol(models.Model):
+    rol = models.CharField(max_length=20, choices=ROLES)
+    vista = models.CharField(max_length=50)
+    puede_ver = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('rol', 'vista')
+        verbose_name = 'Permiso por Rol'
+        verbose_name_plural = 'Permisos por Rol'
+
+    def __str__(self):
+        return f"{self.rol} - {self.vista}: {'Sí' if self.puede_ver else 'No'}"

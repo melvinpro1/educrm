@@ -1,25 +1,40 @@
-// Menú lateral de EduCRM
-
 import React from "react";
 import "./Siderbar.css";
 import logo from "../../recursos/imagenes/logo.jpg";
-import { logout, getCurrentUser } from "../../api/auth";
+import { logout, getCurrentUser, getVistasPermitidas, isAdmin } from "../../api/auth";
 
-// Definimos las opciones con un id que usaremos en App.js
-const opcionesMenu = [
-  { id: "home", etiqueta: "Panel Principal" },
-  { id: "estudiantes", etiqueta: "Estudiantes" },
-  { id: "encargados", etiqueta: "Encargados" },
-  { id: "profesores", etiqueta: "Profesores" },
-  { id: "cursos", etiqueta: "Cursos" },
+const TODAS_OPCIONES = [
+  { id: "home",           etiqueta: "Panel Principal" },
+  { id: "estudiantes",    etiqueta: "Estudiantes" },
+  { id: "encargados",     etiqueta: "Encargados" },
+  { id: "profesores",     etiqueta: "Profesores" },
+  { id: "cursos",         etiqueta: "Cursos" },
   { id: "comunicaciones", etiqueta: "Comunicaciones" },
-  { id: "activos", etiqueta: "Activos" },
-  { id: "prestamos", etiqueta: "Préstamos" },
-  { id: "usuarios", etiqueta: "Usuarios" },
+  { id: "activos",        etiqueta: "Activos" },
+  { id: "prestamos",      etiqueta: "Préstamos" },
+  { id: "notas",          etiqueta: "Notas" },
+  { id: "usuarios",       etiqueta: "Usuarios" },
+  { id: "permisos",       etiqueta: "Permisos" },
 ];
+
+const ROL_LABELS = {
+  admin: "Administrador General",
+  director: "Director",
+  administrador: "Administrador",
+  profesor: "Profesor",
+  encargado: "Encargado",
+};
 
 function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {
   const usuario = getCurrentUser();
+  const admin = isAdmin();
+  const vistasPermitidas = getVistasPermitidas();
+
+  const opcionesVisibles = TODAS_OPCIONES.filter((op) => {
+    if (op.id === "home") return true;
+    if (admin) return true;
+    return vistasPermitidas.includes(op.id);
+  });
 
   const handleCerrarSesion = () => {
     const confirmar = window.confirm("¿Está seguro que desea cerrar sesión?");
@@ -29,15 +44,16 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {
     }
   };
 
-  // Obtener iniciales del usuario
   const obtenerIniciales = (nombre) => {
     if (!nombre) return "U";
-    const palabras = nombre.split(" ");
+    const palabras = nombre.trim().split(" ");
     if (palabras.length >= 2) {
       return (palabras[0][0] + palabras[1][0]).toUpperCase();
     }
     return nombre.substring(0, 2).toUpperCase();
   };
+
+  const rolLabel = ROL_LABELS[usuario?.rol] || (usuario?.is_staff ? "Administrador" : "Usuario");
 
   return (
     <aside className={`sidebar ${abierto ? "sidebar-abierto" : "sidebar-cerrado"}`}>
@@ -56,16 +72,14 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {
       <nav className="sidebar-nav">
         <p className="sidebar-seccion-titulo">NAVEGACIÓN</p>
         <ul className="sidebar-lista">
-          {opcionesMenu.map((opcion) => (
+          {opcionesVisibles.map((opcion) => (
             <li
               key={opcion.id}
               className={
                 "sidebar-item" +
                 (vistaActiva === opcion.id ? " sidebar-item-activo" : "")
               }
-              onClick={() => {
-                if (onCambiarVista) onCambiarVista(opcion.id);
-              }}
+              onClick={() => onCambiarVista && onCambiarVista(opcion.id)}
             >
               <span className="sidebar-item-texto">{opcion.etiqueta}</span>
             </li>
@@ -88,7 +102,11 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {
       {/* Usuario */}
       <div className="sidebar-usuario">
         <div className="sidebar-usuario-avatar">
-          {obtenerIniciales(usuario?.username || usuario?.first_name || "Usuario")}
+          {obtenerIniciales(
+            usuario?.first_name && usuario?.last_name
+              ? `${usuario.first_name} ${usuario.last_name}`
+              : usuario?.username || "U"
+          )}
         </div>
         <div className="sidebar-usuario-info">
           <p className="sidebar-usuario-nombre">
@@ -96,9 +114,7 @@ function Sidebar({ vistaActiva, onCambiarVista, onLogout, abierto }) {
               ? `${usuario.first_name} ${usuario.last_name}`
               : usuario?.username || "Usuario"}
           </p>
-          <p className="sidebar-usuario-rol">
-            {usuario?.is_staff ? "Administrador" : "Usuario"}
-          </p>
+          <p className="sidebar-usuario-rol">{rolLabel}</p>
         </div>
       </div>
 

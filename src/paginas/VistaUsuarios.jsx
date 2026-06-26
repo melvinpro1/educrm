@@ -3,21 +3,71 @@ import "../recursos/estilos/VistaEstudiante.css";
 import Modal from "../componentes/ui/Modal";
 import CampoTexto from "../componentes/ui/CampoTexto";
 import BotonPrincipal from "../componentes/ui/BotonPrincipal";
-import {
-  obtenerUsuarios,
-  crearUsuario,
-  actualizarUsuario,
-  desactivarUsuario,
-} from "../api/usuarios";
+import { obtenerUsuarios, crearUsuario, actualizarUsuario, desactivarUsuario } from "../api/usuarios";
+import { isAdmin } from "../api/auth";
+
+const ROLES = [
+  { code: "director",      nombre: "Director" },
+  { code: "administrador", nombre: "Administrador" },
+  { code: "profesor",      nombre: "Profesor" },
+  { code: "encargado",     nombre: "Encargado" },
+];
+
+const ROL_COLORS = {
+  admin:          { bg: "#1e3a8a", text: "#fff" },
+  director:       { bg: "#065f46", text: "#fff" },
+  administrador:  { bg: "#92400e", text: "#fff" },
+  profesor:       { bg: "#4c1d95", text: "#fff" },
+  encargado:      { bg: "#164e63", text: "#fff" },
+};
+
+function BadgeRol({ rol }) {
+  const c = ROL_COLORS[rol] || { bg: "#6b7280", text: "#fff" };
+  return (
+    <span
+      style={{
+        background: c.bg,
+        color: c.text,
+        padding: "2px 10px",
+        borderRadius: "12px",
+        fontSize: "11px",
+        fontWeight: 600,
+        textTransform: "capitalize",
+      }}
+    >
+      {rol}
+    </span>
+  );
+}
+
+function BadgeEstado({ aprobado }) {
+  return (
+    <span
+      style={{
+        background: aprobado ? "#d1fae5" : "#fef3c7",
+        color: aprobado ? "#065f46" : "#92400e",
+        padding: "2px 10px",
+        borderRadius: "12px",
+        fontSize: "11px",
+        fontWeight: 600,
+      }}
+    >
+      {aprobado ? "Aprobado" : "Pendiente"}
+    </span>
+  );
+}
 
 function FormularioUsuario({ onGuardar, onCancelar, datosIniciales }) {
   const esEdicion = !!datosIniciales;
+  const admin = isAdmin();
+
   const [form, setForm] = useState({
-    username: datosIniciales?.username || "",
-    nombre: datosIniciales?.first_name || "",
-    apellido: datosIniciales?.last_name || "",
-    email: datosIniciales?.email || "",
-    password: "",
+    username:  datosIniciales?.username   || "",
+    nombre:    datosIniciales?.first_name || "",
+    apellido:  datosIniciales?.last_name  || "",
+    email:     datosIniciales?.email      || "",
+    password:  "",
+    rol:       datosIniciales?.rol        || "administrador",
   });
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -51,25 +101,23 @@ function FormularioUsuario({ onGuardar, onCancelar, datosIniciales }) {
     if (esEdicion) {
       resultado = await actualizarUsuario(datosIniciales.id, {
         first_name: form.nombre,
-        last_name: form.apellido,
-        email: form.email,
+        last_name:  form.apellido,
+        email:      form.email,
+        rol:        form.rol,
       });
     } else {
       resultado = await crearUsuario({
         username: form.username,
-        email: form.email,
-        nombre: form.nombre,
+        email:    form.email,
+        nombre:   form.nombre,
+        apellido: form.apellido,
         password: form.password,
+        rol:      form.rol,
       });
     }
 
     setCargando(false);
-
-    if (!resultado.ok) {
-      setError(resultado.error);
-      return;
-    }
-
+    if (!resultado.ok) { setError(resultado.error); return; }
     onGuardar();
   };
 
@@ -88,23 +136,24 @@ function FormularioUsuario({ onGuardar, onCancelar, datosIniciales }) {
         />
       )}
 
-      <CampoTexto
-        etiqueta="Nombre"
-        tipo="text"
-        placeholder="Juan"
-        value={form.nombre}
-        onChange={cambiar("nombre")}
-        disabled={cargando}
-      />
-
-      <CampoTexto
-        etiqueta="Apellido"
-        tipo="text"
-        placeholder="Pérez"
-        value={form.apellido}
-        onChange={cambiar("apellido")}
-        disabled={cargando}
-      />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+        <CampoTexto
+          etiqueta="Nombre"
+          tipo="text"
+          placeholder="Juan"
+          value={form.nombre}
+          onChange={cambiar("nombre")}
+          disabled={cargando}
+        />
+        <CampoTexto
+          etiqueta="Apellido"
+          tipo="text"
+          placeholder="Pérez"
+          value={form.apellido}
+          onChange={cambiar("apellido")}
+          disabled={cargando}
+        />
+      </div>
 
       <CampoTexto
         etiqueta="Correo electrónico"
@@ -126,7 +175,32 @@ function FormularioUsuario({ onGuardar, onCancelar, datosIniciales }) {
         />
       )}
 
-      <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+      {admin && (
+        <div style={{ marginTop: "4px" }}>
+          <label style={{ fontWeight: 600, fontSize: "14px", color: "#374151", display: "block", marginBottom: "4px" }}>
+            Rol
+          </label>
+          <select
+            value={form.rol}
+            onChange={cambiar("rol")}
+            disabled={cargando}
+            style={{
+              width: "100%",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              border: "1px solid #d1d5db",
+              fontSize: "14px",
+              background: "#fff",
+            }}
+          >
+            {ROLES.map((r) => (
+              <option key={r.code} value={r.code}>{r.nombre}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
         <button type="button" className="btn-cancelar" onClick={onCancelar} disabled={cargando}>
           Cancelar
         </button>
@@ -147,6 +221,7 @@ function VistaUsuarios() {
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [modalEliminarOpen, setModalEliminarOpen] = useState(false);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
+  const admin = isAdmin();
 
   async function cargarUsuarios() {
     setLoading(true);
@@ -160,17 +235,13 @@ function VistaUsuarios() {
     }
   }
 
-  useEffect(() => {
-    cargarUsuarios();
-  }, []);
+  useEffect(() => { cargarUsuarios(); }, []);
 
   const usuariosFiltrados = usuarios.filter((u) => {
     const matchEstado =
-      filtroEstado === "todos"
-        ? true
-        : filtroEstado === "activos"
-        ? u.is_active
-        : !u.is_active;
+      filtroEstado === "todos"    ? true :
+      filtroEstado === "activos"  ? u.is_active :
+      !u.is_active;
 
     const termino = busqueda.toLowerCase();
     const matchBusqueda =
@@ -194,29 +265,11 @@ function VistaUsuarios() {
     setUsuarioEditando(null);
   };
 
-  const manejarEditar = (usuario) => {
-    setUsuarioEditando(usuario);
-    setModo("editar");
-  };
-
-  const manejarEliminar = (usuario) => {
-    setUsuarioAEliminar(usuario);
-    setModalEliminarOpen(true);
-  };
-
   const confirmarEliminar = async () => {
     if (!usuarioAEliminar) return;
     const result = await desactivarUsuario(usuarioAEliminar.id);
-    if (!result.ok) {
-      alert(result.error);
-      return;
-    }
+    if (!result.ok) { alert(result.error); return; }
     await cargarUsuarios();
-    setModalEliminarOpen(false);
-    setUsuarioAEliminar(null);
-  };
-
-  const cancelarEliminar = () => {
     setModalEliminarOpen(false);
     setUsuarioAEliminar(null);
   };
@@ -234,7 +287,7 @@ function VistaUsuarios() {
             </p>
           </div>
         </div>
-        <div style={{ maxWidth: "480px", marginTop: "24px" }}>
+        <div style={{ maxWidth: "520px", marginTop: "24px" }}>
           <FormularioUsuario
             onGuardar={manejarGuardar}
             onCancelar={manejarCancelar}
@@ -246,11 +299,7 @@ function VistaUsuarios() {
   }
 
   if (loading) {
-    return (
-      <div className="estudiantes">
-        <p>Cargando usuarios...</p>
-      </div>
-    );
+    return <div className="estudiantes"><p>Cargando usuarios...</p></div>;
   }
 
   return (
@@ -260,9 +309,11 @@ function VistaUsuarios() {
           <h1>Gestión de Usuarios</h1>
           <p>Administre los usuarios del sistema EduCRM</p>
         </div>
-        <button className="btn-nuevo" onClick={() => setModo("nuevo")}>
-          + Nuevo Usuario
-        </button>
+        {admin && (
+          <button className="btn-nuevo" onClick={() => setModo("nuevo")}>
+            + Nuevo Usuario
+          </button>
+        )}
       </div>
 
       <div className="estudiantes-filtros">
@@ -274,9 +325,9 @@ function VistaUsuarios() {
         />
         <div className="filtro-niveles">
           {[
-            { label: "Activos", value: "activos" },
+            { label: "Activos",   value: "activos" },
             { label: "Inactivos", value: "inactivos" },
-            { label: "Todos", value: "todos" },
+            { label: "Todos",     value: "todos" },
           ].map((f) => (
             <button
               key={f.value}
@@ -303,37 +354,45 @@ function VistaUsuarios() {
                       ? `${u.first_name} ${u.last_name}`.trim()
                       : u.username}
                   </h3>
-                  <p className="cedula">{u.username}</p>
+                  <p className="cedula">@{u.username}</p>
                 </div>
               </div>
 
               <div className="tarjeta-detalle">
-                <span className={`nivel ${u.is_active ? "verde" : ""}`}>
-                  {u.is_active ? "Activo" : "Inactivo"}
-                </span>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "6px" }}>
+                  <BadgeRol rol={u.rol || "—"} />
+                  <BadgeEstado aprobado={u.aprobado} />
+                  {!u.is_active && (
+                    <span style={{ background: "#fee2e2", color: "#991b1b", padding: "2px 10px", borderRadius: "12px", fontSize: "11px", fontWeight: 600 }}>
+                      Inactivo
+                    </span>
+                  )}
+                </div>
                 <p>
                   <span className="bi bi-envelope-fill"></span> {u.email}
                 </p>
               </div>
             </div>
 
-            <div className="tarjeta-acciones-vertical">
-              <button
-                className="btn-accion btn-editar"
-                onClick={() => manejarEditar(u)}
-                title="Editar"
-              >
-                <span className="bi bi-pencil-square"></span>
-              </button>
-              <button
-                className="btn-accion btn-eliminar"
-                onClick={() => manejarEliminar(u)}
-                title="Desactivar"
-                disabled={!u.is_active}
-              >
-                <span className="bi bi-person-x"></span>
-              </button>
-            </div>
+            {admin && (
+              <div className="tarjeta-acciones-vertical">
+                <button
+                  className="btn-accion btn-editar"
+                  onClick={() => { setUsuarioEditando(u); setModo("editar"); }}
+                  title="Editar"
+                >
+                  <span className="bi bi-pencil-square"></span>
+                </button>
+                <button
+                  className="btn-accion btn-eliminar"
+                  onClick={() => { setUsuarioAEliminar(u); setModalEliminarOpen(true); }}
+                  title="Desactivar"
+                  disabled={!u.is_active || u.is_superuser}
+                >
+                  <span className="bi bi-person-x"></span>
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
@@ -344,7 +403,7 @@ function VistaUsuarios() {
 
       <Modal
         isOpen={modalEliminarOpen}
-        onClose={cancelarEliminar}
+        onClose={() => { setModalEliminarOpen(false); setUsuarioAEliminar(null); }}
         title="Confirmar desactivación"
         size="wide"
       >
@@ -354,7 +413,11 @@ function VistaUsuarios() {
             <strong>{usuarioAEliminar?.username}</strong>?
           </p>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-            <button type="button" className="btn-cancelar" onClick={cancelarEliminar}>
+            <button
+              type="button"
+              className="btn-cancelar"
+              onClick={() => { setModalEliminarOpen(false); setUsuarioAEliminar(null); }}
+            >
               Cancelar
             </button>
             <button type="button" className="btn-eliminar-modal" onClick={confirmarEliminar}>

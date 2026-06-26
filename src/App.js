@@ -13,7 +13,8 @@ import VistaCursos from "./paginas/VistaCursos.jsx";
 import VistaActivos from "./paginas/VistaActivos.jsx";
 import VistaPrestamos from "./paginas/VistaPrestamos.jsx";
 import VistaUsuarios from "./paginas/VistaUsuarios.jsx";
-import { isAuthenticated } from "./api/auth";
+import VistaPermisos from "./paginas/VistaPermisos.jsx";
+import { isAuthenticated, tienePermiso, isAdmin } from "./api/auth";
 
 function App() {
   const [vistaActiva, setVistaActiva] = useState("home");
@@ -24,18 +25,13 @@ function App() {
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
 
   useEffect(() => {
-    const estaAutenticado = isAuthenticated();
-    setAutenticado(estaAutenticado);
+    setAutenticado(isAuthenticated());
     setCargando(false);
   }, []);
 
   const handleLoginExitoso = () => {
     setAutenticado(true);
-  };
-
-  const handleRegistroExitoso = () => {
-    setAutenticado(true);
-    setMostrarRegistro(false);
+    setVistaActiva("home");
   };
 
   const handleLogout = () => {
@@ -44,20 +40,11 @@ function App() {
     setSidebarAbierto(false);
   };
 
-  const handleMostrarRegistro = () => {
-    setMostrarRegistro(true);
-  };
-
-  const handleMostrarLogin = () => {
-    setMostrarRegistro(false);
-  };
-
-  const handleMostrarRecuperar = () => {
-    setMostrarRecuperar(true);
-  };
-
-  const handleVolverDesdeRecuperar = () => {
-    setMostrarRecuperar(false);
+  const cambiarVista = (id) => {
+    if (id === "home" || tienePermiso(id)) {
+      setVistaActiva(id);
+    }
+    setSidebarAbierto(false);
   };
 
   if (cargando) {
@@ -81,54 +68,64 @@ function App() {
     if (mostrarRegistro) {
       return (
         <Registro
-          onRegistroExitoso={handleRegistroExitoso}
-          onVolverLogin={handleMostrarLogin}
+          onRegistroExitoso={() => {
+            setMostrarRegistro(false);
+          }}
+          onVolverLogin={() => setMostrarRegistro(false)}
         />
       );
     }
     if (mostrarRecuperar) {
-      return (
-        <RecuperarPassword onVolver={handleVolverDesdeRecuperar} />
-      );
+      return <RecuperarPassword onVolver={() => setMostrarRecuperar(false)} />;
     }
     return (
       <Login
         onLoginExitoso={handleLoginExitoso}
-        onMostrarRegistro={handleMostrarRegistro}
-        onMostrarRecuperar={handleMostrarRecuperar}
+        onMostrarRegistro={() => setMostrarRegistro(true)}
+        onMostrarRecuperar={() => setMostrarRecuperar(true)}
       />
     );
   }
 
   const renderContenido = () => {
-    switch (vistaActiva) {
-      case "home":
-        return <Home />;
-      case "estudiantes":
-        return <VistaEstudiante />;
-      case "encargados":
-        return <VistaEncargados />;
-      case "comunicaciones":
-        return <VistaComunicacion />;
-      case "profesores":
-        return <VistaProfesores />;
-      case "cursos":
-        return <VistaCursos />;
-      case "activos":
-        return <VistaActivos />;
-      case "prestamos":
-        return <VistaPrestamos />;
-      case "usuarios":
-        return <VistaUsuarios />;
-      default:
+    const admin = isAdmin();
 
-        return <Home />;
+    if (vistaActiva !== "home" && !admin && !tienePermiso(vistaActiva)) {
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "60vh",
+            color: "#6b7280",
+          }}
+        >
+          <p style={{ fontSize: "48px", margin: "0 0 8px" }}>🔒</p>
+          <h2 style={{ margin: "0 0 8px" }}>Acceso restringido</h2>
+          <p>No tienes permiso para ver esta sección.</p>
+        </div>
+      );
+    }
+
+    switch (vistaActiva) {
+      case "home":          return <Home />;
+      case "estudiantes":   return <VistaEstudiante />;
+      case "encargados":    return <VistaEncargados />;
+      case "comunicaciones":return <VistaComunicacion />;
+      case "profesores":    return <VistaProfesores />;
+      case "cursos":        return <VistaCursos />;
+      case "activos":       return <VistaActivos />;
+      case "prestamos":     return <VistaPrestamos />;
+      case "usuarios":      return <VistaUsuarios />;
+      case "permisos":      return admin ? <VistaPermisos /> : null;
+      default:              return <Home />;
     }
   };
 
   return (
     <div className="layout-principal">
-      {/* Botón toggle del sidebar */}
       {sidebarAbierto && (
         <div
           className="sidebar-overlay"
@@ -146,10 +143,7 @@ function App() {
 
       <Sidebar
         vistaActiva={vistaActiva}
-        onCambiarVista={(id) => {
-          setVistaActiva(id);
-          setSidebarAbierto(false);
-        }}
+        onCambiarVista={cambiarVista}
         onLogout={handleLogout}
         abierto={sidebarAbierto}
       />

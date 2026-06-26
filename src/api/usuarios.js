@@ -31,9 +31,7 @@ export async function crearUsuario(data) {
       body: JSON.stringify(data),
     });
     const json = await res.json().catch(() => null);
-    if (!res.ok) {
-      throw new Error(json?.detail || "Error al crear usuario.");
-    }
+    if (!res.ok) throw new Error(json?.detail || "Error al crear usuario.");
     return { ok: true, data: json };
   } catch (err) {
     return { ok: false, error: err.message || "Error al crear usuario." };
@@ -48,9 +46,7 @@ export async function actualizarUsuario(id, data) {
       body: JSON.stringify(data),
     });
     const json = await res.json().catch(() => null);
-    if (!res.ok) {
-      throw new Error(json?.detail || "Error al actualizar usuario.");
-    }
+    if (!res.ok) throw new Error(json?.detail || "Error al actualizar usuario.");
     return { ok: true, data: json };
   } catch (err) {
     return { ok: false, error: err.message || "Error al actualizar usuario." };
@@ -64,9 +60,7 @@ export async function desactivarUsuario(id) {
       headers: authHeaders(),
     });
     const json = await res.json().catch(() => null);
-    if (!res.ok) {
-      throw new Error(json?.detail || "Error al desactivar usuario.");
-    }
+    if (!res.ok) throw new Error(json?.detail || "Error al desactivar usuario.");
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message || "Error al desactivar usuario." };

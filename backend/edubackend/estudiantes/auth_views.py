@@ -6,43 +6,81 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
+from django.utils import timezone
+
+from .models import PerfilUsuario, PermisoRol, PERMISOS_DEFAULT, VISTAS_DISPONIBLES, ROLES
+
+
+def _get_o_crear_perfil(user):
+    perfil, _ = PerfilUsuario.objects.get_or_create(
+        usuario=user,
+        defaults={
+            'rol': 'admin' if user.is_superuser else 'profesor',
+            'aprobado': user.is_superuser,
+        }
+    )
+    return perfil
+
+
+def _get_vistas_permitidas(rol):
+    permisos_db = PermisoRol.objects.filter(rol=rol)
+    if permisos_db.exists():
+        return [p.vista for p in permisos_db if p.puede_ver]
+    return PERMISOS_DEFAULT.get(rol, ['home'])
+
+
+def _user_data(user):
+    try:
+        perfil = user.perfil
+    except PerfilUsuario.DoesNotExist:
+        perfil = _get_o_crear_perfil(user)
+
+    rol = 'admin' if user.is_superuser else perfil.rol
+    vistas = list(VISTAS_DISPONIBLES) if user.is_superuser else _get_vistas_permitidas(rol)
+    aprobado = user.is_superuser or perfil.aprobado
+
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_active': user.is_active,
+        'is_staff': user.is_staff,
+        'is_superuser': user.is_superuser,
+        'rol': rol,
+        'aprobado': aprobado,
+        'vistas_permitidas': vistas,
+    }
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_view(request):
-    """
-    Endpoint para registrar un nuevo usuario
-    Acepta username, email, password, first_name, last_name
-    """
     username = request.data.get('username')
     email = request.data.get('email')
     password = request.data.get('password')
     first_name = request.data.get('first_name', '')
     last_name = request.data.get('last_name', '')
 
-    # Validaciones
     if not username or not email or not password:
         return Response(
             {'detail': 'Por favor proporcione username, email y password'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Validar longitud de contraseña
     if len(password) < 6:
         return Response(
             {'detail': 'La contraseña debe tener al menos 6 caracteres'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Verificar si el username ya existe
     if User.objects.filter(username=username).exists():
         return Response(
             {'detail': 'El nombre de usuario ya está en uso'},
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Verificar si el email ya existe
     if User.objects.filter(email=email).exists():
         return Response(
             {'detail': 'El correo electrónico ya está registrado'},
@@ -50,31 +88,22 @@ def register_view(request):
         )
 
     try:
-        # Crear el usuario
         user = User.objects.create_user(
             username=username,
             email=email,
             password=password,
             first_name=first_name,
-            last_name=last_name
+            last_name=last_name,
+            is_active=True,
         )
-
-        # Crear token automáticamente
-        token = Token.objects.create(user=user)
-
-        # Retornar token y datos del usuario
+        PerfilUsuario.objects.create(
+            usuario=user,
+            rol='profesor',
+            aprobado=False,
+        )
         return Response({
-            'token': token.key,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'is_staff': user.is_staff,
-                'is_superuser': user.is_superuser,
-            },
-            'message': 'Usuario registrado exitosamente'
+            'pendiente_aprobacion': True,
+            'message': 'Registro exitoso. Su cuenta está pendiente de aprobación por el administrador.',
         }, status=status.HTTP_201_CREATED)
 
     except Exception as e:
@@ -87,11 +116,6 @@ def register_view(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
-    """
-    Endpoint para iniciar sesión
-    Acepta username/email y password
-    Retorna token de autenticación y datos del usuario
-    """
     username = request.data.get('username')
     password = request.data.get('password')
 
@@ -101,7 +125,6 @@ def login_view(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    # Intentar autenticar por username; si falla, buscar por email
     user = authenticate(username=username, password=password)
 
     if user is None:
@@ -123,49 +146,45 @@ def login_view(request):
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    # Obtener o crear token
-    token, created = Token.objects.get_or_create(user=user)
+    if not user.is_superuser:
+        try:
+            perfil = user.perfil
+            if not perfil.aprobado:
+                return Response(
+                    {
+                        'detail': 'Su cuenta está pendiente de aprobación por el administrador.',
+                        'pendiente_aprobacion': True,
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except PerfilUsuario.DoesNotExist:
+            PerfilUsuario.objects.create(usuario=user, rol='profesor', aprobado=False)
+            return Response(
+                {
+                    'detail': 'Su cuenta está pendiente de aprobación por el administrador.',
+                    'pendiente_aprobacion': True,
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+    else:
+        _get_o_crear_perfil(user)
 
-    # Retornar token y datos del usuario
+    token, _ = Token.objects.get_or_create(user=user)
+
     return Response({
         'token': token.key,
-        'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'is_staff': user.is_staff,
-            'is_superuser': user.is_superuser,
-        }
+        'user': _user_data(user),
     })
 
 
 @api_view(['POST'])
 def logout_view(request):
-    """
-    Endpoint para cerrar sesión
-    Elimina el token del usuario
-    """
     if request.user.is_authenticated:
-        # Eliminar el token del usuario
         try:
             request.user.auth_token.delete()
-        except:
+        except Exception:
             pass
-
     return Response({'detail': 'Sesión cerrada exitosamente'})
-
-
-def _user_data(user):
-    return {
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'first_name': user.first_name,
-        'last_name': user.last_name,
-        'is_active': user.is_active,
-    }
 
 
 class UsuarioListCreateView(APIView):
@@ -176,10 +195,18 @@ class UsuarioListCreateView(APIView):
         return Response([_user_data(u) for u in users])
 
     def post(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {'detail': 'Solo el administrador puede crear usuarios.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
         nombre = request.data.get('nombre', '')
+        apellido = request.data.get('apellido', '')
+        rol = request.data.get('rol', 'administrador')
 
         if not username or not email or not password:
             return Response(
@@ -188,20 +215,22 @@ class UsuarioListCreateView(APIView):
             )
 
         if User.objects.filter(username=username).exists():
-            return Response(
-                {'detail': 'El nombre de usuario ya está en uso.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'detail': 'El nombre de usuario ya está en uso.'}, status=400)
 
         if User.objects.filter(email=email).exists():
-            return Response(
-                {'detail': 'El correo electrónico ya está registrado.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'detail': 'El correo electrónico ya está registrado.'}, status=400)
 
-        user = User(username=username, email=email, first_name=nombre)
+        user = User(username=username, email=email, first_name=nombre, last_name=apellido)
         user.set_password(password)
         user.save()
+
+        PerfilUsuario.objects.create(
+            usuario=user,
+            rol=rol,
+            aprobado=True,
+            aprobado_por=request.user,
+            fecha_aprobacion=timezone.now(),
+        )
 
         return Response(_user_data(user), status=status.HTTP_201_CREATED)
 
@@ -218,10 +247,7 @@ class UsuarioDetailView(APIView):
     def patch(self, request, pk):
         user = self._get_user(pk)
         if user is None:
-            return Response(
-                {'detail': 'Usuario no encontrado.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'detail': 'Usuario no encontrado.'}, status=404)
 
         if 'first_name' in request.data:
             user.first_name = request.data['first_name']
@@ -230,32 +256,143 @@ class UsuarioDetailView(APIView):
         if 'email' in request.data:
             email = request.data['email']
             if User.objects.filter(email=email).exclude(pk=pk).exists():
-                return Response(
-                    {'detail': 'El correo electrónico ya está en uso.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'detail': 'El correo electrónico ya está en uso.'}, status=400)
             user.email = email
 
         user.save()
+
+        if 'rol' in request.data and request.user.is_superuser:
+            perfil, _ = PerfilUsuario.objects.get_or_create(
+                usuario=user,
+                defaults={'rol': 'profesor', 'aprobado': False}
+            )
+            perfil.rol = request.data['rol']
+            perfil.save()
+
         return Response(_user_data(user))
 
     def delete(self, request, pk):
         user = self._get_user(pk)
         if user is None:
-            return Response(
-                {'detail': 'Usuario no encontrado.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({'detail': 'Usuario no encontrado.'}, status=404)
 
         user.is_active = False
         user.save()
         return Response({'detail': 'Usuario desactivado correctamente.'})
 
 
+class AprobarUsuarioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        if not request.user.is_superuser:
+            return Response(
+                {'detail': 'Solo el administrador puede aprobar usuarios.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'detail': 'Usuario no encontrado.'}, status=404)
+
+        accion = request.data.get('accion', 'aprobar')
+        rol = request.data.get('rol', 'administrador')
+
+        if accion == 'rechazar':
+            user.is_active = False
+            user.save()
+            return Response({'detail': 'Usuario rechazado y desactivado.'})
+
+        perfil, _ = PerfilUsuario.objects.get_or_create(
+            usuario=user,
+            defaults={'rol': 'profesor', 'aprobado': False}
+        )
+        perfil.rol = rol
+        perfil.aprobado = True
+        perfil.aprobado_por = request.user
+        perfil.fecha_aprobacion = timezone.now()
+        perfil.save()
+
+        return Response({
+            'detail': 'Usuario aprobado correctamente.',
+            'usuario': _user_data(user),
+        })
+
+
+class UsuariosPendientesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {'detail': 'Solo el administrador puede ver usuarios pendientes.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        pendientes = PerfilUsuario.objects.filter(
+            aprobado=False,
+            usuario__is_active=True,
+        ).select_related('usuario').order_by('fecha_registro')
+
+        return Response([_user_data(p.usuario) for p in pendientes])
+
+
+class PermisoRolView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {'detail': 'Solo el administrador puede ver permisos.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        resultado = {}
+        for rol_code, rol_nombre in ROLES:
+            permisos_db = {
+                p.vista: p.puede_ver
+                for p in PermisoRol.objects.filter(rol=rol_code)
+            }
+            defaults = PERMISOS_DEFAULT.get(rol_code, [])
+            vistas_config = {
+                vista: permisos_db[vista] if vista in permisos_db else (vista in defaults)
+                for vista in VISTAS_DISPONIBLES
+            }
+            resultado[rol_code] = {
+                'nombre': rol_nombre,
+                'vistas': vistas_config,
+            }
+
+        return Response(resultado)
+
+    def post(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {'detail': 'Solo el administrador puede modificar permisos.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        rol = request.data.get('rol')
+        vistas = request.data.get('vistas', {})
+
+        if not rol or rol not in dict(ROLES):
+            return Response({'detail': 'Rol inválido.'}, status=400)
+
+        for vista, puede_ver in vistas.items():
+            if vista in VISTAS_DISPONIBLES:
+                PermisoRol.objects.update_or_create(
+                    rol=rol,
+                    vista=vista,
+                    defaults={'puede_ver': bool(puede_ver)},
+                )
+
+        return Response({'detail': f'Permisos del rol {rol} actualizados correctamente.'})
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def recuperar_view(request):
-    # TODO: integrar envío SMTP y token de recuperación con expiración de 24h.
     email = request.data.get('email', '').strip()
     password_nueva = request.data.get('password_nueva', '')
 
