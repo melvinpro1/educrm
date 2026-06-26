@@ -126,6 +126,29 @@ export async function updateEstudiante(id, payload) {
   }
 }
 
+export async function reactivarEstudiante(id) {
+  try {
+    const res = await fetch(`${API_BASE}/estudiantes/${id}/?estado=todos`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ activo: true }),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const detail = data?.detail || "Error al reactivar estudiante.";
+      const err = new Error(detail);
+      err.detail = detail;
+      throw err;
+    }
+    return { ok: true, data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err.detail || err.message || "Error al reactivar estudiante.",
+    };
+  }
+}
+
 export async function getHistorialAcciones() {
   try {
     return await apiGet("/estudiantes/historial/");

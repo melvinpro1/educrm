@@ -10,6 +10,7 @@ import {
   deleteEstudiante,
   createEstudiante,
   updateEstudiante,
+  reactivarEstudiante,
 } from "../api/estudiantes";
 
 function Estudiantes() {
@@ -152,6 +153,17 @@ const cerrarModalConfirmacion = () => {
   setModalConfirmacionOpen(false);
   setMensajeConfirmacion("");
 };
+  const manejarReactivar = async (estudiante) => {
+    const result = await reactivarEstudiante(estudiante.id_estudiante);
+    if (!result.ok) {
+      alert(result.error);
+      return;
+    }
+    await cargarEstudiantes();
+    setMensajeConfirmacion(`Estudiante "${estudiante.nombre}" reactivado correctamente`);
+    setModalConfirmacionOpen(true);
+  };
+
   // 🔹 Editar estudiante - ahora usa el formulario completo
   const manejarEditar = (est) => {
     setEstudianteEditando(est);
@@ -315,13 +327,24 @@ const cerrarModalConfirmacion = () => {
               >
                 <span className="bi bi-pencil-square"></span>
               </button>
-              <button
-                className="btn-accion btn-eliminar"
-                onClick={() => manejarEliminar(e)}
-                title="Eliminar"
-              >
-                <span className="bi bi-trash"></span>
-              </button>
+              {e.activo ? (
+                <button
+                  className="btn-accion btn-eliminar"
+                  onClick={() => manejarEliminar(e)}
+                  title="Desactivar"
+                >
+                  <span className="bi bi-trash"></span>
+                </button>
+              ) : (
+                <button
+                  className="btn-accion btn-editar"
+                  onClick={() => manejarReactivar(e)}
+                  title="Reactivar"
+                  style={{ background: "#d1fae5", color: "#065f46" }}
+                >
+                  <span className="bi bi-arrow-counterclockwise"></span>
+                </button>
+              )}
             </div>
           </div>
         ))}
