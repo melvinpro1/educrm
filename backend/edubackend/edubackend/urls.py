@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include 
 from rest_framework.routers import DefaultRouter
 from estudiantes.views import EncargadoViewSet, EstudianteViewSet
-from estudiantes.auth_views import login_view, logout_view, register_view
+from estudiantes.auth_views import login_view, logout_view, register_view, UsuarioListCreateView, UsuarioDetailView, recuperar_view
 from profesores.views import ProfesorViewSet
 from cursos.views import CursoViewSet
 from activos.views import ActivoViewSet, PrestamoViewSet
@@ -40,6 +40,9 @@ urlpatterns = [
     path('api/auth/login/', login_view, name='login'),
     path('api/auth/logout/', logout_view, name='logout'),
     path('api/auth/register/', register_view, name='register'),
+    path('api/auth/usuarios/', UsuarioListCreateView.as_view(), name='usuarios-list'),
+    path('api/auth/usuarios/<int:pk>/', UsuarioDetailView.as_view(), name='usuarios-detail'),
+    path('api/auth/recuperar/', recuperar_view, name='recuperar-password'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

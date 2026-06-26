@@ -3,6 +3,7 @@ import Sidebar from "./componentes/siderbar/Siderbar.jsx";
 import Home from "./paginas/Home";
 import Login from "./paginas/Login";
 import Registro from "./paginas/Registro";
+import RecuperarPassword from "./paginas/RecuperarPassword";
 import "./index.css";
 import VistaEstudiante from "./paginas/VistaEstudiante.jsx";
 import VistaEncargados from "./paginas/VistaEncargado.jsx";
@@ -18,6 +19,7 @@ function App() {
   const [autenticado, setAutenticado] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [mostrarRegistro, setMostrarRegistro] = useState(false);
+  const [mostrarRecuperar, setMostrarRecuperar] = useState(false);
   const [sidebarAbierto, setSidebarAbierto] = useState(false);
 
   useEffect(() => {
@@ -49,6 +51,14 @@ function App() {
     setMostrarRegistro(false);
   };
 
+  const handleMostrarRecuperar = () => {
+    setMostrarRecuperar(true);
+  };
+
+  const handleVolverDesdeRecuperar = () => {
+    setMostrarRecuperar(false);
+  };
+
   if (cargando) {
     return (
       <div
@@ -75,10 +85,16 @@ function App() {
         />
       );
     }
+    if (mostrarRecuperar) {
+      return (
+        <RecuperarPassword onVolver={handleVolverDesdeRecuperar} />
+      );
+    }
     return (
       <Login
         onLoginExitoso={handleLoginExitoso}
         onMostrarRegistro={handleMostrarRegistro}
+        onMostrarRecuperar={handleMostrarRecuperar}
       />
     );
   }

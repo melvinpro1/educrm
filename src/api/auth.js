@@ -105,3 +105,20 @@ export function getCurrentUser() {
 export function getAuthToken() {
   return localStorage.getItem("authToken");
 }
+
+export async function recuperarPassword(email, password_nueva) {
+  try {
+    const response = await fetch(`${API_BASE}/auth/recuperar/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password_nueva }),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.detail || "Error al recuperar contraseña.");
+    }
+    return { ok: true, detail: data?.detail };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+}

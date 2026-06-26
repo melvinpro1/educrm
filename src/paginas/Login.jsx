@@ -5,7 +5,7 @@ import logo from '../recursos/imagenes/logo.jpg'; // Ajusta la ruta según donde
 import { login } from '../api/auth';
 
 // Página de inicio de sesión de EduCRM
-function Login({ onLoginExitoso, onMostrarRegistro }) {
+function Login({ onLoginExitoso, onMostrarRegistro, onMostrarRecuperar }) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');
@@ -95,9 +95,20 @@ function Login({ onLoginExitoso, onMostrarRegistro }) {
         </form>
 
         <p className="texto-pie-autenticacion">
+          ¿Olvidó su contraseña?{' '}
+          <a
+            href="#recuperar"
+            className="enlace-autenticacion"
+            onClick={(e) => { e.preventDefault(); onMostrarRecuperar(); }}
+          >
+            Recupérela aquí
+          </a>
+        </p>
+
+        <p className="texto-pie-autenticacion">
           ¿No tiene una cuenta?{' '}
-          <a 
-            href="#registro" 
+          <a
+            href="#registro"
             className="enlace-autenticacion"
             onClick={(e) => {
               e.preventDefault();
